@@ -51,8 +51,8 @@ def multiplication_table():
     """
     print the multiplication table ("lu'ach ha'kefel") using Python's broadcasting
     """
-    x = range(1,10)
-    print(np.matmul(x, np.transpose(x)))
+    x = np.mat([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    print(x.transpose()*x)
 
 
 def view_face():
