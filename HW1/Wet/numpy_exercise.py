@@ -10,16 +10,18 @@ def one_hot_5_of_10():
     """
     Return a zero vector of size 10 but the fifth value which is 1
     """
-    # +++your code here+++
-    return
+    vector = np.zeros(10)
+    vector[4] = 1
+    return vector
 
 
 def negate_3_to_8(x):
     """
     Given a 1D array, negate all elements which are between 3 and 8
     """
-    # +++your code here+++
-    return
+    mask = (x > 3) & (x < 8)
+    x[mask] *= -1
+    return x
 
 
 def get_size_properties(x):
@@ -27,8 +29,7 @@ def get_size_properties(x):
     Given an array x, return a tuple with the following properties:
     (num_rows, num_cols, num_elements, num_dimensions)
     """
-    # +++your code here+++
-    return
+    return (x.shape[0], x.shape[1], x.size, x.ndim)
 
 
 def append_vector_to_matrix(x, y):
@@ -36,30 +37,29 @@ def append_vector_to_matrix(x, y):
     Append row vector y to the end (bottom) of matrix x.
     Result may be a new matrix (rather than the input matrix itself)
     """
-    # +++your code here+++
-    return
+    return np.row_stack((x, y))
 
 
 def column_sum(x):
     """
     Return a vector containing the sum of each column of x
     """
-    # +++your code here+++
-    return
+    return x.sum(axis=0)
 
 
 def multiplication_table():
     """
     print the multiplication table ("lu'ach ha'kefel") using Python's broadcasting
     """
-    # +++your code here+++
+    x = range(1,10)
+    print(np.matmul(x, np.transpose(x)))
 
 
 def view_face():
     """
     View the face image using Scipy's scipy.misc.face() and display the image
     """
-    # +++your code here+++
+    plt.imshow(face())
 
 
 def q1():
@@ -87,17 +87,17 @@ def plot_samples(sample, x):
 
     plt.subplot(2,2,2)
     plt.title('Probability Distribution Function')
-    # +++your code here+++
+    pdf = norm.pdf(x)
     plt.plot(pdf)
 
     plt.subplot(2,2,3)
     plt.title('Cummulative Distribution Function')
-    # +++your code here+++
+    cdf = norm.cdf(x)
     plt.plot(cdf)
 
     plt.subplot(2,2,4)
     plt.title('Percent Point Function')
-    # +++your code here+++
+    ppf = norm.ppf(x)
     plt.plot(ppf)
     plt.show(block=True)
 
@@ -106,7 +106,7 @@ def seed_zero():
     """
     Seed numpy's random generator with the value 0
     """
-    # +++your code here+++
+    np.random.seed(0)
 
 
 def test(got, expected):
