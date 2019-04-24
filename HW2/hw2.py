@@ -90,13 +90,42 @@ print(X_train_prep_mode)
 
 # ------------------------ B1: Type/Value Modification --------------
 
-# Binominal (converting to [-1,1])
-
-# TODO: fill in
-
 # Multinominal/Polynominal
+# iterate over all Multinominal/Polynominal columns
+multiColumns = {'Most_Important_Issue', 'Will_vote_only_large_party', 'Age_group', 'Main_transportation', 'Occupation'}
+for column in multiColumns:
+    # for each column determine the set of unique values
+    column_values_set = set(X_train_prep[column])
 
-# TODO: fill in
+    for value in column_values_set:
+        # split each column by the number of options to a binominal feature column
+        value_dict = {value: 1}
+        for val in column_values_set:
+            if val != value:
+                value_dict[val] = 0
+
+        X_train_prep[column + '_' + str(value)] = pd.Series.copy(X_train_prep[column])
+        X_train_prep[column + '_' + str(value)].replace(value_dict, inplace=True)
+
+# delete original columns
+X_train_prep.drop(columns=multiColumns, inplace=True)
+
+
+# Binominal (converting to [-1,1])
+# biColumns = {'Looking_at_poles_results', 'Married', 'Gender', 'Voting_Time', 'Financial_agenda_matters'}
+
+# We define an 'encoding' dictionary from a binominal feature to a numerical value
+cleanup_nums = {"Financial_agenda_matters":
+                    {"Yes": 1, "No": -1},
+                "Married":
+                    {"Yes": 1, "No": -1},
+                "Gender":
+                    {"Male": 1, "Female": -1},
+                "Voting_Time":
+                    {"By_16:00": 1, "After_16:00": -1}
+                }
+
+X_train_prep.replace(cleanup_nums, inplace=True)
 
 
 # print(X_train_prep.values[:, 2])
