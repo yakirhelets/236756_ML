@@ -63,18 +63,25 @@ Y_test_prep = Y_test.copy()
 # ------------------------ A: Imputation ----------------------------
 # -------------------------------------------------------------------
 
-# Method 1: Remove examples with NaN
+# Method 1: Remove examples with at least one NaN
 
 X_train_dropped_NaN = X_train_prep.dropna()
 print(X_train_dropped_NaN.shape)
 
 # Method 2: Single Value Assignment - Mode
-#TODO: for all columns
-mod = stats.mode(X_train_prep["Occupation_Satisfaction"])
-X_train_prep["Occupation_Satisfaction"].fillna(mod[0][0])
-# print(X_train_prep)
+
+X_train_prep_mode = X_train_prep.copy(deep=True)
+
+for i in range(len(X_train_prep_mode.columns)):
+    i_th_column = X_train_prep_mode.iloc[:, i]
+    mod = i_th_column.mode().get(0)
+    X_train_prep_mode.iloc[:, i] = X_train_prep_mode.iloc[:, i].fillna(mod)
+
+print(X_train_prep_mode)
 
 # Method 3:
+
+# TODO: fill in
 
 
 # -------------------------------------------------------------------
@@ -118,18 +125,22 @@ plt.show()
 # ------------------------ C: Normalization -------------------------
 # -------------------------------------------------------------------
 
-# TODO: fill in
-
 # First we check the distribution of each column to see whether to apply
 # Z-score on it or Min-Max:
 
-# TODO: plot the histogram for each column of X_train_prep and check if it's normally or uniformly distributed
+# plot the histogram for each column of X_train_prep and check if it's normally or uniformly distributed
+
+for i in range(len(X_train_prep_mode.columns)):
+    i_th_column = X_train_prep.iloc[:, i]
+    hist = i_th_column.hist()
+    hist.set_title(X_train_prep.columns.values[i])
+    plt.show()
+
 
 
 # Z-score:
 
-column_z_score = X_train_prep["Avg_monthly_expense_when_under_age_21"]
-X_train_prep["Avg_monthly_expense_when_under_age_21"] = stats.zscore(column_z_score)
+X_train_prep[0] = stats.zscore(X_train_prep[0]) #TODO continue to work on
 
 # Min-Max:
 
