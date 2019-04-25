@@ -128,7 +128,6 @@ cleanup_nums = {"Financial_agenda_matters":
 X_train_prep.replace(cleanup_nums, inplace=True)
 
 
-# print(X_train_prep.values[:, 2])
 
 # ------------------------ B2: Outlier Detection --------------------
 
@@ -159,29 +158,38 @@ plt.show()
 
 # plot the histogram for each column of X_train_prep and check if it's normally or uniformly distributed
 
-for i in range(len(X_train_prep_mode.columns)):
-    i_th_column = X_train_prep.iloc[:, i]
-    hist = i_th_column.hist()
-    hist.set_title(X_train_prep.columns.values[i])
-    plt.show()
+# X_train_prep.to_csv("updated_file.csv")
 
-
+# for i in range(len(X_train_prep_mode.columns)):
+#     i_th_column = X_train_prep.iloc[:, 4]
+#     print("4th column")
+#     print(i_th_column)
+#     hist = i_th_column.hist()
+#     hist.set_title(X_train_prep.columns.values[4])
+#     plt.show()
 
 # Z-score:
 
-X_train_prep[0] = stats.zscore(X_train_prep[0]) #TODO continue to work on
+X_train_prep_mode_zscore = X_train_prep_mode.copy(deep=True)
+
+z_score_attributes = [0]
+
+for i in z_score_attributes:
+    X_train_prep_mode_zscore.iloc[:, i] = stats.zscore(X_train_prep_mode_zscore.iloc[:, i])
+print(X_train_prep_mode_zscore)
 
 # Min-Max:
 
-# TODO: determine later for each attribute that we are going
-# TODO: to apply min-max on if [-1,1] is right (leave as is) or we need a different range
-# TODO: then create a new scaler with the required range
+# TODO: (-1,1) range or change for some attributes?
 
-# scaler = MinMaxScaler(feature_range=(-1,1))
+X_train_prep_mode_min_max = X_train_prep_mode.copy(deep=True)
+scaler = MinMaxScaler(feature_range=(-1, 1))
 
-# column_min_max = X_train_prep["Avg_monthly_expense_when_under_age_21"]
-# X_train_prep["Avg_monthly_expense_when_under_age_21"] = scaler.transform(column_min_max)
+min_max_attributes = [1]
 
+# TODO: Insert proper columns to here
+X_train_prep_mode_min_max.iloc[:, 0:1] = scaler.fit_transform(X_train_prep_mode_min_max.iloc[:, 0:1])
+print(X_train_prep_mode_min_max)
 
 
 # -------------------------------------------------------------------
