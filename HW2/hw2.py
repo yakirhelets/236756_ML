@@ -119,6 +119,8 @@ cleanup_nums = {"Financial_agenda_matters":
                     {"Yes": 1, "No": -1},
                 "Married":
                     {"Yes": 1, "No": -1},
+                "Looking_at_poles_results":
+                    {"Yes": 1, "No": -1},
                 "Gender":
                     {"Male": 1, "Female": -1},
                 "Voting_Time":
