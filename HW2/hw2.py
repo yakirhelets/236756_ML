@@ -4,6 +4,9 @@ from scipy import stats
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.neighbors import KNeighborsClassifier
+from mlxtend.feature_selection import SequentialFeatureSelector as SFS
+from skrebate import ReliefF
 
 # -------------------------------------------------------------------
 # ------------------------ 1: Loading the data ----------------------
@@ -20,17 +23,7 @@ elections_data = pd.read_csv(elections_file)
 
 # Identify and set the correct type of each attribute
 
-
-# lst = list(data_frame._get_axis(1))
-# print(lst)
-# data_frame.astype()
-# print(data_frame.sample(1).dtypes)
-
-# TODO: make sure the datatypes are also int etc.
-# TODO: probably after imputation, if not - ask
-# print(elections_data.iloc[[1]].dtypes)
-
-
+print(elections_data.iloc[[1]].dtypes)
 
 # -------------------------------------------------------------------
 # ------------------------ 3: Split the data ------------------------
@@ -90,12 +83,14 @@ print(X_train_prep_mode)
 
 # ------------------------ B1: Type/Value Modification --------------
 
+X_train_prep_mode_b1 = X_train_prep_mode.copy(deep=True)
+
 # Multinominal/Polynominal
 # iterate over all Multinominal/Polynominal columns
 multiColumns = {'Most_Important_Issue', 'Will_vote_only_large_party', 'Age_group', 'Main_transportation', 'Occupation'}
 for column in multiColumns:
     # for each column determine the set of unique values
-    column_values_set = set(X_train_prep[column])
+    column_values_set = set(X_train_prep_mode_b1[column])
 
     for value in column_values_set:
         # split each column by the number of options to a binominal feature column
@@ -104,11 +99,11 @@ for column in multiColumns:
             if val != value:
                 value_dict[val] = 0
 
-        X_train_prep[column + '_' + str(value)] = pd.Series.copy(X_train_prep[column])
-        X_train_prep[column + '_' + str(value)].replace(value_dict, inplace=True)
+        X_train_prep_mode_b1[column + '_' + str(value)] = pd.Series.copy(X_train_prep_mode_b1[column])
+        X_train_prep_mode_b1[column + '_' + str(value)].replace(value_dict, inplace=True)
 
 # delete original columns
-X_train_prep.drop(columns=multiColumns, inplace=True)
+X_train_prep_mode_b1.drop(columns=multiColumns, inplace=True)
 
 
 # Binominal (converting to [-1,1])
@@ -127,21 +122,20 @@ cleanup_nums = {"Financial_agenda_matters":
                     {"By_16:00": 1, "After_16:00": -1}
                 }
 
-X_train_prep.replace(cleanup_nums, inplace=True)
+X_train_prep_mode_b1.replace(cleanup_nums, inplace=True)
 
 
 
 # ------------------------ B2: Outlier Detection --------------------
 
 # Printing the correlation matrix TODO: research correlation in pandas more
-# TODO: right now shows only the 27 numerical features, need to convert caterogical to numerical before running
-plt.matshow(X_train_prep.corr())
+plt.matshow(X_train_prep_mode_b1.corr())
 plt.show()
 # histogram_intersection = lambda a, b: np.minimum(a, b).sum().round(decimals=1)
 # X_train_prep.corr(method=histogram_intersection)
 
 # outlier detection - 3 examples of correlated features #TODO: provide more examples based on the correlation matrix
-plt.scatter(X_train_prep.Avg_monthly_expense_when_under_age_21, X_train_prep.Avg_monthly_expense_on_pets_or_plants)
+plt.scatter(X_train_prep_mode_b1.Avg_monthly_expense_when_under_age_21, X_train_prep_mode_b1.Avg_monthly_expense_on_pets_or_plants)
 plt.show()
 
 # TODO: write code that eliminates examples beyond a certain range, for each attribute
@@ -160,46 +154,63 @@ plt.show()
 
 # plot the histogram for each column of X_train_prep and check if it's normally or uniformly distributed
 
-# X_train_prep.to_csv("updated_file.csv")
-
-# for i in range(len(X_train_prep_mode.columns)):
-#     i_th_column = X_train_prep.iloc[:, 4]
-#     print("4th column")
-#     print(i_th_column)
+#TODO: bring following code back
+# for i in range(len(X_train_prep.columns)):
+#     i_th_column = X_train_prep.iloc[:, i]
 #     hist = i_th_column.hist()
-#     hist.set_title(X_train_prep.columns.values[4])
+#     hist.set_title(X_train_prep.columns.values[i])
 #     plt.show()
+
+X_train_prep_mode_b1_scaled = X_train_prep_mode_b1.copy(deep=True)
+
 
 # Z-score:
 
-X_train_prep_mode_zscore = X_train_prep_mode.copy(deep=True)
+z_score_attributes = [1,2,3,5,14,17,18,19,20,21,22,24,25,26,27,28,29,30]
 
-z_score_attributes = [0]
-
+# actual zscore scaling
 for i in z_score_attributes:
-    X_train_prep_mode_zscore.iloc[:, i] = stats.zscore(X_train_prep_mode_zscore.iloc[:, i])
-print(X_train_prep_mode_zscore)
+    X_train_prep_mode_b1_scaled.iloc[:, i] = stats.zscore(X_train_prep_mode_b1_scaled.iloc[:, i])
+
 
 # Min-Max:
 
-# TODO: (-1,1) range or change for some attributes?
+# TODO: (-1,1) range for all or change for some attributes?
 
-X_train_prep_mode_min_max = X_train_prep_mode.copy(deep=True)
 scaler = MinMaxScaler(feature_range=(-1, 1))
 
-min_max_attributes = [1]
+# min_max attributes indices: [0,9,10,11,12,13,15,16,23]
+min_max_attributes = ["Occupation_Satisfaction", "Financial_balance_score_(0-1)", "%Of_Household_Income",
+                      "Yearly_IncomeK", "Overall_happiness_score", "Garden_sqr_meter_per_person_in_residancy_area",
+                      "Yearly_ExpensesK", "%Time_invested_in_work", "%_satisfaction_financial_policy"]
 
-# TODO: Insert proper columns to here
-X_train_prep_mode_min_max.iloc[:, 0:1] = scaler.fit_transform(X_train_prep_mode_min_max.iloc[:, 0:1])
-print(X_train_prep_mode_min_max)
+# actual min_max scaling
+X_train_prep_mode_b1_scaled[min_max_attributes] = scaler.fit_transform(X_train_prep_mode_b1_scaled[min_max_attributes])
+
+X_train_prep_mode_b1_scaled.to_csv("updated_file.csv")
 
 
 # -------------------------------------------------------------------
 # ------------------------ D: Feature Selection ---------------------
 # -------------------------------------------------------------------
 
+# Wrapper method = SFS
 # TODO: fill in
+knn = KNeighborsClassifier(n_neighbors=3)  # TODO explain why chose this value
+sfs = SFS(knn, k_features=20, forward=True, floating=False, verbose=2, scoring='accuracy', cv=0)  # TODO explain the values here
+result_sfs = sfs.fit(X_train_prep_mode_b1_scaled, Y_train_prep)
+print(result_sfs.subsets_)  # TODO make sure applying on the right X and Y and then right down results
 
+
+# Filter method = Relief algorithm
+# relief = ReliefF(n_features_to_select=20, n_neighbors=3)  # TODO explain the values here
+# result_relief = relief.fit(X_train_prep_mode_b1_scaled, Y_train_prep)
+# print(result_relief)  # TODO make sure applying on the right X and Y and then right down results
+
+
+
+
+# TODO: lastly probably get the intersection of the two methods and choose only those features and explain in the report
 
 # -------------------------------------------------------------------
 # ------------------------ 5: Apply changes on other sets -----------
