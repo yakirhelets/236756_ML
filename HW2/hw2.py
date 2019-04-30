@@ -131,20 +131,100 @@ X_train_prep_mode_b1.replace(cleanup_nums, inplace=True)
 # Printing the correlation matrix TODO: research correlation in pandas more
 plt.matshow(X_train_prep_mode_b1.corr())
 plt.show()
+# X_train_prep_mode_b1.corr().to_csv("corr.csv")
+
+c = X_train_prep_mode_b1.corr().abs()
+
+s = c.unstack()
+so = s.sort_values(kind="quicksort", ascending=False)
+
+
+dropping_value = 0.8
+rows_to_drop = []
+for idx in range(len(so)):
+    if so[idx] < dropping_value or so[idx] == 1.0:  # only Multivariate
+        rows_to_drop.append(so.index[idx])
+
+so.drop(rows_to_drop, inplace=True)
+print("highest correlations:")
+print(so)
+
 # histogram_intersection = lambda a, b: np.minimum(a, b).sum().round(decimals=1)
 # X_train_prep.corr(method=histogram_intersection)
 
 # outlier detection - 3 examples of correlated features #TODO: provide more examples based on the correlation matrix
-plt.scatter(X_train_prep_mode_b1.Avg_monthly_expense_when_under_age_21, X_train_prep_mode_b1.Avg_monthly_expense_on_pets_or_plants)
+
+
+# Methods of outlier detection:
+# 1. Any value, which is beyond the range of -1.5 x IQR to 1.5 x IQR
+
+# 2. Use capping methods. Any value which out of range of 5th and 95th percentile can be considered as outlier
+
+
+# 3. Data points, three or more standard deviation away from mean are considered outlier (Z-Score)
+
+
+plt.scatter(X_train_prep_mode_b1.Avg_monthly_expense_when_under_age_21,
+            X_train_prep_mode_b1.Avg_monthly_expense_when_under_age_21)
 plt.show()
 
 # TODO: write code that eliminates examples beyond a certain range, for each attribute
+# Univariate Outliers - One dimensional (one variable)
+def clipByIQR(dataset, col):
+    sort = sorted(dataset[col])
+    q1, q3 = np.percentile(sort, [25, 75])
+    iqr = q3 - q1
+    lower_bound = q1 - (1.5 * iqr)
+    upper_bound = q3 + (1.5 * iqr)
+    for row in dataset.iterrows():
+        if row[1][col] < lower_bound or row[1][col] > upper_bound:
+            dataset.drop([row[0]], inplace=True)
+
+
+def clipByPerecentile(dataset, col):
+    sort = sorted(dataset[col])
+    lower_bound, upper_bound = np.percentile(sort, [5, 95])
+    for row in dataset.iterrows():
+        if row[1][col] < lower_bound or row[1][col] > upper_bound:
+            dataset.drop([row[0]], inplace=True)
+
+
+def clipByZScore(dataset, col):
+    z_scores = stats.zscore(dataset[col])
+    for idx in range(len(z_scores)):
+        if abs(z_scores[idx]) > 3:
+            dataset.drop([idx], inplace=True)
+
+
+# Multivariate Outliers (more than one variable)
+
+#TODO: use histogram on the multivariate outliers and then one of the above methods
 
 # outliers_estimator = Estimator()
-# outliers_detection = estimator.fit(X_train_prep)
-# print(outliers_detection)
+outliers_detection = X_train_prep_mode_b1.copy(deep=True)
+clipByIQR(outliers_detection, "Avg_monthly_expense_when_under_age_21")
+print(str(outliers_detection.Avg_monthly_expense_when_under_age_21.shape[0]) + " rows left")
+plt.scatter(outliers_detection.Avg_monthly_expense_when_under_age_21,
+            outliers_detection.Avg_monthly_expense_when_under_age_21)
+plt.show()
 
+outliers_detection = X_train_prep_mode_b1.copy(deep=True)
+clipByPerecentile(outliers_detection, "Avg_monthly_expense_when_under_age_21")
+print(str(outliers_detection.Avg_monthly_expense_when_under_age_21.shape[0]) + " rows left")
+plt.scatter(outliers_detection.Avg_monthly_expense_when_under_age_21,
+            outliers_detection.Avg_monthly_expense_when_under_age_21)
+plt.show()
 
+outliers_detection = X_train_prep_mode_b1.copy(deep=True)
+clipByZScore(outliers_detection, "Avg_monthly_expense_when_under_age_21")
+print(str(outliers_detection.Avg_monthly_expense_when_under_age_21.shape[0]) + " rows left")
+plt.scatter(outliers_detection.Avg_monthly_expense_when_under_age_21,
+            outliers_detection.Avg_monthly_expense_when_under_age_21)
+plt.show()
+
+plt.scatter(X_train_prep_mode_b1.Avg_government_satisfaction,
+            X_train_prep_mode_b1.Political_interest_Total_Score)
+plt.show()
 # -------------------------------------------------------------------
 # ------------------------ C: Normalization -------------------------
 # -------------------------------------------------------------------
