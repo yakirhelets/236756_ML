@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neighbors import LocalOutlierFactor
 from mlxtend.feature_selection import SequentialFeatureSelector as SFS
 from skrebate import ReliefF
 
@@ -125,106 +126,108 @@ cleanup_nums = {"Financial_agenda_matters":
 X_train_prep_mode_b1.replace(cleanup_nums, inplace=True)
 
 
-
 # ------------------------ B2: Outlier Detection --------------------
 
 # Printing the correlation matrix TODO: research correlation in pandas more
 plt.matshow(X_train_prep_mode_b1.corr())
 plt.show()
-# X_train_prep_mode_b1.corr().to_csv("corr.csv")
 
+# Fetching the features with the highest correlation between them
 c = X_train_prep_mode_b1.corr().abs()
-
 s = c.unstack()
 so = s.sort_values(kind="quicksort", ascending=False)
-
-
-dropping_value = 0.8
-rows_to_drop = []
+dropping_value = 0.8  # TODO: experiment with other values
+highest_corr = []
 for idx in range(len(so)):
-    if so[idx] < dropping_value or so[idx] == 1.0:  # only Multivariate
-        rows_to_drop.append(so.index[idx])
+    if dropping_value <= so[idx] < 1.0:
+        highest_corr.append(so.index[idx])
+highest_corr = highest_corr[1::2]
+print("Highest correlations:")
+print(highest_corr)
 
-so.drop(rows_to_drop, inplace=True)
-print("highest correlations:")
-print(so)
-
-# histogram_intersection = lambda a, b: np.minimum(a, b).sum().round(decimals=1)
-# X_train_prep.corr(method=histogram_intersection)
-
-# outlier detection - 3 examples of correlated features #TODO: provide more examples based on the correlation matrix
-
-
-# Methods of outlier detection:
-# 1. Any value, which is beyond the range of -1.5 x IQR to 1.5 x IQR
-
-# 2. Use capping methods. Any value which out of range of 5th and 95th percentile can be considered as outlier
-
-
-# 3. Data points, three or more standard deviation away from mean are considered outlier (Z-Score)
-
-
-plt.scatter(X_train_prep_mode_b1.Avg_monthly_expense_when_under_age_21,
-            X_train_prep_mode_b1.Avg_monthly_expense_when_under_age_21)
-plt.show()
 
 # TODO: write code that eliminates examples beyond a certain range, for each attribute
 # Univariate Outliers - One dimensional (one variable)
+# Methods of outlier detection:
+# 1. Any value, which is beyond the range of -1.5 x IQR to 1.5 x IQR
+# 2. Use capping methods. Any value which out of range of 5th and 95th percentile can be considered as outlier
+# 3. Data points, three or more standard deviation away from mean are considered outlier (Z-Score)
 def clipByIQR(dataset, col):
     sort = sorted(dataset[col])
+    to_remove = set()
     q1, q3 = np.percentile(sort, [25, 75])
     iqr = q3 - q1
     lower_bound = q1 - (1.5 * iqr)
     upper_bound = q3 + (1.5 * iqr)
     for row in dataset.iterrows():
         if row[1][col] < lower_bound or row[1][col] > upper_bound:
-            dataset.drop([row[0]], inplace=True)
+            to_remove.add(row[0])
+    to_remove = list(to_remove)
+    dataset.drop(to_remove, inplace=True, errors='ignore')
 
 
 def clipByPerecentile(dataset, col):
     sort = sorted(dataset[col])
+    to_remove = set()
     lower_bound, upper_bound = np.percentile(sort, [5, 95])
     for row in dataset.iterrows():
         if row[1][col] < lower_bound or row[1][col] > upper_bound:
-            dataset.drop([row[0]], inplace=True)
+            to_remove.add(row[0])
+    to_remove = list(to_remove)
+    dataset.drop(to_remove, inplace=True, errors='ignore')
 
 
 def clipByZScore(dataset, col):
     z_scores = stats.zscore(dataset[col])
+    to_remove = set()
     for idx in range(len(z_scores)):
         if abs(z_scores[idx]) > 3:
-            dataset.drop([idx], inplace=True)
+            to_remove.add(idx)
+    to_remove = list(to_remove)
+    dataset.drop(to_remove, inplace=True, errors='ignore')
+
+
+# Performing one of the above functions on every column
+for col in X_train_prep_mode_b1.columns.tolist():
+    plt.hist(X_train_prep_mode_b1[col])
+    plt.show()
+    clipByZScore(X_train_prep_mode_b1, col)  # TODO: pick the best method
+    plt.hist(X_train_prep_mode_b1[col])
+    plt.show()
 
 
 # Multivariate Outliers (more than one variable)
+# Using Local Outlier Factor in order to detect multivariate outliers
+def RemoveMultiOutliers(dataset, col1, col2):
+    # fit the model for outlier detection (default)
+    clf = LocalOutlierFactor(n_neighbors=100, contamination=0.01)
+    # use fit_predict to compute the predicted labels of the training samples
+    # (when LOF is used for outlier detection, the estimator has no predict,
+    # decision_function and score_samples methods).
+    X = list(zip(dataset[col1].values.tolist(),
+                 dataset[col2].values.tolist()))
+    y_pred = clf._fit_predict(X)
+    to_remove = set()
+    for i in range(len(X)):
+        if y_pred[i] == -1:
+            to_remove = to_remove | (set(dataset.loc[(dataset[col1] == X[i][0]) & (dataset[col2] <= X[i][1])].index.tolist()))
+    to_remove = list(to_remove)
+    dataset.drop(to_remove, inplace=True)
 
-#TODO: use histogram on the multivariate outliers and then one of the above methods
 
-# outliers_estimator = Estimator()
-outliers_detection = X_train_prep_mode_b1.copy(deep=True)
-clipByIQR(outliers_detection, "Avg_monthly_expense_when_under_age_21")
-print(str(outliers_detection.Avg_monthly_expense_when_under_age_21.shape[0]) + " rows left")
-plt.scatter(outliers_detection.Avg_monthly_expense_when_under_age_21,
-            outliers_detection.Avg_monthly_expense_when_under_age_21)
-plt.show()
+for tuple in highest_corr:
+    plt.scatter(X_train_prep_mode_b1[tuple[0]],
+                X_train_prep_mode_b1[tuple[1]])
+    plt.show()
+    RemoveMultiOutliers(X_train_prep_mode_b1, tuple[0], tuple[1])
+    plt.scatter(X_train_prep_mode_b1[tuple[0]],
+                X_train_prep_mode_b1[tuple[1]])
+    plt.show()
 
-outliers_detection = X_train_prep_mode_b1.copy(deep=True)
-clipByPerecentile(outliers_detection, "Avg_monthly_expense_when_under_age_21")
-print(str(outliers_detection.Avg_monthly_expense_when_under_age_21.shape[0]) + " rows left")
-plt.scatter(outliers_detection.Avg_monthly_expense_when_under_age_21,
-            outliers_detection.Avg_monthly_expense_when_under_age_21)
-plt.show()
 
-outliers_detection = X_train_prep_mode_b1.copy(deep=True)
-clipByZScore(outliers_detection, "Avg_monthly_expense_when_under_age_21")
-print(str(outliers_detection.Avg_monthly_expense_when_under_age_21.shape[0]) + " rows left")
-plt.scatter(outliers_detection.Avg_monthly_expense_when_under_age_21,
-            outliers_detection.Avg_monthly_expense_when_under_age_21)
-plt.show()
+print("Dataset size after outlier removal:")
+print(X_train_prep_mode_b1.shape)
 
-plt.scatter(X_train_prep_mode_b1.Avg_government_satisfaction,
-            X_train_prep_mode_b1.Political_interest_Total_Score)
-plt.show()
 # -------------------------------------------------------------------
 # ------------------------ C: Normalization -------------------------
 # -------------------------------------------------------------------
