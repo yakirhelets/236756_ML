@@ -1,13 +1,14 @@
 import pandas as pd
 import numpy as np
 from scipy import stats
+from sklearn.feature_selection import VarianceThreshold
+from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neighbors import LocalOutlierFactor
 from mlxtend.feature_selection import SequentialFeatureSelector as SFS
-from skrebate import ReliefF
 
 # -------------------------------------------------------------------
 # ------------------------ 1: Loading the data ----------------------
@@ -76,6 +77,28 @@ print(X_train_prep_mode)
 # Method 3:
 
 # TODO: fill in
+
+lin_reg = LinearRegression()
+
+# Prepare a array that shows for each attribute the attribute that is closest to it
+# For each attribute:
+for i in range(len(X_train_prep.columns)):
+    # save the closest attribute to it
+    first_att_name = X_train_prep[i].value
+    print(first_att_name)
+    # second_att_name =
+    # drop all columns except these two
+    # df_two_cols = X_train_prep[[first_att_name, second_att_name]]
+    # save the examples that have both (don't have nan in any)
+    # df_have_both_values =
+    # make the linear line from all of these examples with the built in function
+    # for all of the examples that have either of them missing:
+    # fill with the function
+
+
+
+
+# all of the others that haven't been filled - fill with mode
 
 
 # -------------------------------------------------------------------
@@ -303,29 +326,25 @@ X_train_prep_mode_b1_scaled.to_csv("updated_file.csv")
 # ------------------------ D: Feature Selection ---------------------
 # -------------------------------------------------------------------
 
+# Filter method = Variance Threshold
+filter = VarianceThreshold(threshold=0.2)
+filter.fit_transform(X_train_prep_mode_b1_scaled)
+print(filter.get_support(indices=True))
+
+
 # Wrapper method = SFS
-# TODO: fill in
-knn = KNeighborsClassifier(n_neighbors=3)  # TODO explain why chose this value
-sfs = SFS(knn, k_features=20, forward=True, floating=False, verbose=2, scoring='accuracy', cv=0)  # TODO explain the values here
-result_sfs = sfs.fit(X_train_prep_mode_b1_scaled, Y_train_prep)
-print(result_sfs.subsets_)  # TODO make sure applying on the right X and Y and then right down results
+knn = KNeighborsClassifier(n_neighbors=3)
+sfs = SFS(knn, k_features=30, forward=True, floating=False, verbose=2, scoring='accuracy', cv=0)
+sfs = sfs.fit(X_train_prep_mode_b1_scaled, Y_train_prep)
+print(sfs.k_feature_idx_)  # TODO make sure applying on the right X and Y and then write down results
 
-
-# Filter method = Relief algorithm
-# relief = ReliefF(n_features_to_select=20, n_neighbors=3)  # TODO explain the values here
-# result_relief = relief.fit(X_train_prep_mode_b1_scaled, Y_train_prep)
-# print(result_relief)  # TODO make sure applying on the right X and Y and then right down results
-
-
-
-
-# TODO: lastly probably get the intersection of the two methods and choose only those features and explain in the report
 
 # -------------------------------------------------------------------
 # ------------------------ 5: Apply changes on other sets -----------
 # -------------------------------------------------------------------
 
 # TODO: fill in
+# Should apply parts A,B,C
 
 
 # -------------------------------------------------------------------
