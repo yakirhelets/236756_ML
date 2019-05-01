@@ -25,7 +25,7 @@ elections_data = pd.read_csv(elections_file)
 
 # Identify and set the correct type of each attribute
 
-print(elections_data.iloc[[1]].dtypes)
+# print(elections_data.iloc[[1]].dtypes)
 
 # -------------------------------------------------------------------
 # ------------------------ 3: Split the data ------------------------
@@ -55,6 +55,37 @@ Y_test_prep = Y_test.copy()
 # -------------------------------------------------------------------
 
 # -------------------------------------------------------------------
+# ------------------------ Helper functions -------------------------
+# -------------------------------------------------------------------
+
+def getHighestCorrelations(dataset, dropping_value=0.8):  # TODO: experiment with other values
+    # Printing the correlation matrix TODO: research correlation in pandas more
+    plt.matshow(dataset.corr())
+    plt.show()
+    # Fetching the features with the highest correlation between them
+    corr = dataset.corr().abs()
+    s = corr.unstack()
+    sorted_corrs = s.sort_values(kind="quicksort", ascending=False)
+    highest_corr_list = []
+    to_remove = []
+    for idx in range(len(sorted_corrs)):
+        if dropping_value <= sorted_corrs[idx] < 1.0:
+            highest_corr_list.append(sorted_corrs.index[idx])
+        # This part is used only for printing the highest correlations
+        else:
+            to_remove.append(sorted_corrs.index[idx])
+        # -----
+    sorted_corrs.drop(to_remove, inplace=True)
+    # This part is used only for printing the highest correlations
+    print("Highest correlations:")
+    print(sorted_corrs.iloc[1::2])
+    # -----
+    highest_corr_list = highest_corr_list[1::2]
+    return highest_corr_list
+
+
+
+# -------------------------------------------------------------------
 # ------------------------ A: Imputation ----------------------------
 # -------------------------------------------------------------------
 
@@ -72,26 +103,30 @@ for i in range(len(X_train_prep_mode.columns)):
     mod = i_th_column.mode().get(0)
     X_train_prep_mode.iloc[:, i] = X_train_prep_mode.iloc[:, i].fillna(mod)
 
-print(X_train_prep_mode)
+# print(X_train_prep_mode)
 
 # Method 3:
 
-# TODO: fill in
-
 lin_reg = LinearRegression()
+corr_list = getHighestCorrelations(X_train_prep, 0.0)
 
 # Prepare a array that shows for each attribute the attribute that is closest to it
 # For each attribute:
 for i in range(len(X_train_prep.columns)):
     # save the closest attribute to it
-    first_att_name = X_train_prep[i].value
-    print(first_att_name)
-    # second_att_name =
+    first_att_name = X_train_prep.columns[i]
+    found_tup_list = [tup for tup in corr_list if (first_att_name in tup)]
+    found_tup = found_tup_list[0]
+    second_att_name = found_tup[0] if first_att_name == found_tup[1] else found_tup[1]
     # drop all columns except these two
-    # df_two_cols = X_train_prep[[first_att_name, second_att_name]]
+    df_two_cols = X_train_prep[[first_att_name, second_att_name]]
+    print("df_two_cols")
+    print(df_two_cols)
     # save the examples that have both (don't have nan in any)
     # df_have_both_values =
     # make the linear line from all of these examples with the built in function
+    lin_reg.fit(df_have_both_values[0], df_have_both_values[1])
+    # https: // towardsdatascience.com / linear - regression - in -6 - lines - of - python - 5e1d0cd05b8d
     # for all of the examples that have either of them missing:
     # fill with the function
 
@@ -150,30 +185,7 @@ X_train_prep_mode_b1.replace(cleanup_nums, inplace=True)
 
 
 # ------------------------ B2: Outlier Detection --------------------
-def getHighestCorrelations(dataset, dropping_value=0.8):  # TODO: experiment with other values
-    # Printing the correlation matrix TODO: research correlation in pandas more
-    plt.matshow(dataset.corr())
-    plt.show()
-    # Fetching the features with the highest correlation between them
-    corr = dataset.corr().abs()
-    s = corr.unstack()
-    sorted_corrs = s.sort_values(kind="quicksort", ascending=False)
-    highest_corr_list = []
-    to_remove = []
-    for idx in range(len(sorted_corrs)):
-        if dropping_value <= sorted_corrs[idx] < 1.0:
-            highest_corr_list.append(sorted_corrs.index[idx])
-        # This part is used only for printing the highest correlations
-        else:
-            to_remove.append(sorted_corrs.index[idx])
-        # -----
-    sorted_corrs.drop(to_remove, inplace=True)
-    # This part is used only for printing the highest correlations
-    print("Highest correlations:")
-    print(sorted_corrs.iloc[1::2])
-    # -----
-    highest_corr_list = highest_corr_list[1::2]
-    return highest_corr_list
+
 
 
 highest_corr = getHighestCorrelations(X_train_prep_mode_b1, dropping_value=0.8)
