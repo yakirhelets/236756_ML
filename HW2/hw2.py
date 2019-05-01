@@ -152,6 +152,15 @@ for i in range(len(X_train_prep.columns)):
     except StopIteration:
         continue
 
+# Multinominal/Polynominal/Binominal imputation
+nonNumeric = {'Most_Important_Issue', 'Will_vote_only_large_party', 'Age_group', 'Main_transportation',
+              'Occupation', 'Looking_at_poles_results', 'Married', 'Gender', 'Voting_Time',
+              'Financial_agenda_matters'}
+for col in nonNumeric:
+    i_th_column = X_train_prep[[col]]
+    mod = i_th_column.mode()
+    X_train_prep[[col]] = X_train_prep[[col]].fillna(mod)
+
 
 
 # all of the others that haven't been filled - fill with mode
