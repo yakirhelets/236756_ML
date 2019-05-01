@@ -10,6 +10,11 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neighbors import LocalOutlierFactor
 from mlxtend.feature_selection import SequentialFeatureSelector as SFS
 
+# TODO: search for negative values where it's impossible
+# TODO: manual imputation
+# TODO: fix linear regression
+# TODO: "mode()" on bi/multi categorial nans
+
 # -------------------------------------------------------------------
 # ------------------------ 1: Loading the data ----------------------
 # -------------------------------------------------------------------
@@ -119,31 +124,33 @@ for i in range(len(X_train_prep.columns)):
     # save the closest attribute to it
     first_att_name = X_train_prep.columns[i]
     print(first_att_name)
-    found_tup = next(tup for tup in corr_list if (first_att_name in tup))
-    # found_tup_list = [tup for tup in corr_list if (first_att_name in tup)]
-    # found_tup = found_tup_list[0]
-    second_att_name = found_tup[0] if first_att_name == found_tup[1] else found_tup[1]
-    # print(second_att_name)
-    # drop all columns except these two
-    df_two_cols = X_train_prep[[first_att_name, second_att_name]]
-    # print("df_two_cols")
-    # print(df_two_cols)
-    # save the examples that have both (don't have nan in any)
-    df_have_both_values = df_two_cols.dropna()
-    # print("df_have_both_values")
-    # print(df_have_both_values)
-    # make the linear line from all of these examples with the built in function
-    lin_reg.fit(df_have_both_values[[first_att_name]], df_have_both_values[[second_att_name]])
-    # https: // towardsdatascience.com / linear - regression - in -6 - lines - of - python - 5e1d0cd05b8d
-    # for all of the examples that have either of them missing:
-    Y_pred = lin_reg.predict(df_have_both_values[[first_att_name]])  # make predictions
-    # fill with the function
-    plt.scatter(df_have_both_values[[first_att_name]], df_have_both_values[[second_att_name]])
-    plt.xlabel(first_att_name)
-    plt.ylabel(second_att_name)
-    plt.plot(df_have_both_values[[first_att_name]], Y_pred, color='red')
-    plt.show()
-
+    try:
+        found_tup = next(tup for tup in corr_list if (first_att_name in tup))
+        # found_tup_list = [tup for tup in corr_list if (first_att_name in tup)]
+        # found_tup = found_tup_list[0]
+        second_att_name = found_tup[0] if first_att_name == found_tup[1] else found_tup[1]
+        # print(second_att_name)
+        # drop all columns except these two
+        df_two_cols = X_train_prep[[first_att_name, second_att_name]]
+        # print("df_two_cols")
+        # print(df_two_cols)
+        # save the examples that have both (don't have nan in any)
+        df_have_both_values = df_two_cols.dropna()
+        # print("df_have_both_values")
+        # print(df_have_both_values)
+        # make the linear line from all of these examples with the built in function
+        lin_reg.fit(df_have_both_values[[first_att_name]], df_have_both_values[[second_att_name]])
+        # https: // towardsdatascience.com / linear - regression - in -6 - lines - of - python - 5e1d0cd05b8d
+        # for all of the examples that have either of them missing:
+        Y_pred = lin_reg.predict(df_have_both_values[[first_att_name]])  # make predictions
+        # fill with the function
+        plt.scatter(df_have_both_values[[first_att_name]], df_have_both_values[[second_att_name]])
+        plt.xlabel(first_att_name)
+        plt.ylabel(second_att_name)
+        plt.plot(df_have_both_values[[first_att_name]], Y_pred, color='red')
+        plt.show()
+    except StopIteration:
+        continue
 
 
 
