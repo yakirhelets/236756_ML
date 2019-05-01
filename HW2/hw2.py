@@ -10,8 +10,6 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neighbors import LocalOutlierFactor
 from mlxtend.feature_selection import SequentialFeatureSelector as SFS
 
-# TODO: manual imputation
-# TODO: fix linear regression
 
 # -------------------------------------------------------------------
 # ------------------------ 1: Loading the data ----------------------
@@ -28,7 +26,7 @@ elections_data = pd.read_csv(elections_file)
 
 # Identify and set the correct type of each attribute
 
-# print(elections_data.iloc[[1]].dtypes)
+print(elections_data.iloc[[1]].dtypes)
 
 # -------------------------------------------------------------------
 # ------------------------ 3: Split the data ------------------------
@@ -129,22 +127,24 @@ for i in range(len(X_train_prep_mode.columns)):
 
 # Method 3:
 
-lin_reg = LinearRegression()
 corr_list = getHighestCorrelations(X_train_prep, -1.0)
 print(len(corr_list))
 print(corr_list)
+
+int_value_columns = {'Occupation_Satisfaction', 'Yearly_ExpensesK', 'Last_school_grades', 'Number_of_differnt_parties_voted_for',
+                     'Number_of_valued_Kneset_members', 'Num_of_kids_born_last_10_years'}
+
 # Prepare a array that shows for each attribute the attribute that is closest to it
 # For each attribute:
 for i in range(len(X_train_prep.columns)):
     # save the closest attribute to it
+    lin_reg = LinearRegression()
     first_att_name = X_train_prep.columns[i]
-    print(first_att_name)
     try:
         found_tup = next(tup for tup in corr_list if (first_att_name in tup))
         # found_tup_list = [tup for tup in corr_list if (first_att_name in tup)]
         # found_tup = found_tup_list[0]
         second_att_name = found_tup[0] if first_att_name == found_tup[1] else found_tup[1]
-        # print(second_att_name)
         # drop all columns except these two
         df_two_cols = X_train_prep[[first_att_name, second_att_name]]
         # print("df_two_cols")
@@ -154,16 +154,27 @@ for i in range(len(X_train_prep.columns)):
         # print("df_have_both_values")
         # print(df_have_both_values)
         # make the linear line from all of these examples with the built in function
-        lin_reg.fit(df_have_both_values[[first_att_name]], df_have_both_values[[second_att_name]])
-        # https: // towardsdatascience.com / linear - regression - in -6 - lines - of - python - 5e1d0cd05b8d
-        # for all of the examples that have either of them missing:
-        Y_pred = lin_reg.predict(df_have_both_values[[first_att_name]])  # make predictions
-        # fill with the function
-        plt.scatter(df_have_both_values[[first_att_name]], df_have_both_values[[second_att_name]])
-        plt.xlabel(first_att_name)
-        plt.ylabel(second_att_name)
-        plt.plot(df_have_both_values[[first_att_name]], Y_pred, color='red')
-        plt.show()
+        df_first = df_two_cols[[first_att_name]]
+        df_second = df_two_cols[[second_att_name]]
+
+        lin_reg.fit(df_have_both_values[[second_att_name]], df_have_both_values[[first_att_name]])
+
+        X_train_prep.to_csv("before.csv")
+
+        for j in range(len(df_first)):
+            if np.math.isnan(df_first.iloc[j, 0]):
+                if not np.math.isnan(df_second.iloc[j, 0]):
+                    dat = {'col1': [df_second.iloc[j, 0]]}
+                    predicted_value = lin_reg.predict(pd.DataFrame(dat))
+                    actual_value = predicted_value[0][0]
+                    if first_att_name in int_value_columns:
+                        actual_value = round(actual_value)
+                    df_first.iloc[j,0] = actual_value
+
+        # assign the imputed column back to the original one
+        X_train_prep.iloc[:, i] = df_first.iloc[:, :]
+        X_train_prep.to_csv("after.csv")
+
     except StopIteration:
         continue
 
