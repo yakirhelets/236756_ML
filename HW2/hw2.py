@@ -60,6 +60,7 @@ Y_test_prep = Y_test.copy()
 
 def getHighestCorrelations(dataset, dropping_value=0.8):  # TODO: experiment with other values
     # Printing the correlation matrix TODO: research correlation in pandas more
+    dataset.apply(lambda x: x.factorize()[0]).corr() # TODO: Make it work
     plt.matshow(dataset.corr())
     plt.show()
     # Fetching the features with the highest correlation between them
@@ -81,6 +82,7 @@ def getHighestCorrelations(dataset, dropping_value=0.8):  # TODO: experiment wit
     print(sorted_corrs.iloc[1::2])
     # -----
     highest_corr_list = highest_corr_list[1::2]
+    corr.to_csv("corr_abs.csv")
     return highest_corr_list
 
 
@@ -108,27 +110,39 @@ for i in range(len(X_train_prep_mode.columns)):
 # Method 3:
 
 lin_reg = LinearRegression()
-corr_list = getHighestCorrelations(X_train_prep, 0.0)
-
+corr_list = getHighestCorrelations(X_train_prep, -1.0)
+print(len(corr_list))
+print(corr_list)
 # Prepare a array that shows for each attribute the attribute that is closest to it
 # For each attribute:
 for i in range(len(X_train_prep.columns)):
     # save the closest attribute to it
     first_att_name = X_train_prep.columns[i]
-    found_tup_list = [tup for tup in corr_list if (first_att_name in tup)]
-    found_tup = found_tup_list[0]
+    print(first_att_name)
+    found_tup = next(tup for tup in corr_list if (first_att_name in tup))
+    # found_tup_list = [tup for tup in corr_list if (first_att_name in tup)]
+    # found_tup = found_tup_list[0]
     second_att_name = found_tup[0] if first_att_name == found_tup[1] else found_tup[1]
+    # print(second_att_name)
     # drop all columns except these two
     df_two_cols = X_train_prep[[first_att_name, second_att_name]]
-    print("df_two_cols")
-    print(df_two_cols)
+    # print("df_two_cols")
+    # print(df_two_cols)
     # save the examples that have both (don't have nan in any)
-    # df_have_both_values =
+    df_have_both_values = df_two_cols.dropna()
+    # print("df_have_both_values")
+    # print(df_have_both_values)
     # make the linear line from all of these examples with the built in function
-    lin_reg.fit(df_have_both_values[0], df_have_both_values[1])
+    lin_reg.fit(df_have_both_values[[first_att_name]], df_have_both_values[[second_att_name]])
     # https: // towardsdatascience.com / linear - regression - in -6 - lines - of - python - 5e1d0cd05b8d
     # for all of the examples that have either of them missing:
+    Y_pred = lin_reg.predict(df_have_both_values[[first_att_name]])  # make predictions
     # fill with the function
+    plt.scatter(df_have_both_values[[first_att_name]], df_have_both_values[[second_att_name]])
+    plt.xlabel(first_att_name)
+    plt.ylabel(second_att_name)
+    plt.plot(df_have_both_values[[first_att_name]], Y_pred, color='red')
+    plt.show()
 
 
 
@@ -200,9 +214,9 @@ highest_corr = getHighestCorrelations(X_train_prep_mode_b1, dropping_value=0.8)
 def clipByIQR(dataset, dropping_factor=1.5):
     to_remove = set()
     for col in X_train_prep_mode_b1.columns.tolist():
-        # Printing
-        plt.hist(X_train_prep_mode_b1[col])
-        plt.show()
+        # # Printing
+        # plt.hist(X_train_prep_mode_b1[col])
+        # plt.show()
         sort = sorted(dataset[col])
         q1, q3 = np.percentile(sort, [25, 75])
         iqr = q3 - q1
@@ -211,9 +225,9 @@ def clipByIQR(dataset, dropping_factor=1.5):
         for row in dataset.iterrows():
             if row[1][col] < lower_bound or row[1][col] > upper_bound:
                 to_remove.add(row[0])
-        # Printing
-        plt.hist(X_train_prep_mode_b1[col])
-        plt.show()
+        # # Printing
+        # plt.hist(X_train_prep_mode_b1[col])
+        # plt.show()
 
     to_remove = list(to_remove)
     dataset.drop(to_remove, inplace=True)
@@ -222,17 +236,17 @@ def clipByIQR(dataset, dropping_factor=1.5):
 def clipByPerecentile(dataset, dropping_percentage=5):
     to_remove = set()
     for col in X_train_prep_mode_b1.columns.tolist():
-        # Printing
-        plt.hist(X_train_prep_mode_b1[col])
-        plt.show()
+        # # Printing
+        # plt.hist(X_train_prep_mode_b1[col])
+        # plt.show()
         sort = sorted(dataset[col])
         lower_bound, upper_bound = np.percentile(sort, [dropping_percentage, 100 - dropping_percentage])
         for row in dataset.iterrows():
             if row[1][col] < lower_bound or row[1][col] > upper_bound:
                 to_remove.add(row[0])
-        # Printing
-        plt.hist(X_train_prep_mode_b1[col])
-        plt.show()
+        # # Printing
+        # plt.hist(X_train_prep_mode_b1[col])
+        # plt.show()
     to_remove = list(to_remove)
     dataset.drop(to_remove, inplace=True)
 
@@ -240,28 +254,28 @@ def clipByPerecentile(dataset, dropping_percentage=5):
 def clipByZScore(dataset, dropping_factor=3.0):
     to_remove = set()
     for col in X_train_prep_mode_b1.columns.tolist():
-        # Printing
-        plt.hist(X_train_prep_mode_b1[col])
-        plt.show()
+        # # Printing
+        # plt.hist(X_train_prep_mode_b1[col])
+        # plt.show()
         z_scores = stats.zscore(dataset[col])
         for idx in range(len(z_scores)):
             if abs(z_scores[idx]) > dropping_factor:
                 to_remove.add(idx)
-        # Printing
-        plt.hist(X_train_prep_mode_b1[col])
-        plt.show()
+        # # Printing
+        # plt.hist(X_train_prep_mode_b1[col])
+        # plt.show()
     to_remove = list(to_remove)
     dataset.drop(to_remove, inplace=True)
 
 
 # Performing one of the above functions on every column
-clipByZScore(X_train_prep_mode_b1, 4.0)  # TODO: pick the best method
+# clipByZScore(X_train_prep_mode_b1, 4.0)  # TODO: pick the best method
 
 # Multivariate Outliers (more than one variable)
 # Using Local Outlier Factor in order to detect multivariate outliers
 def RemoveMultiOutliers(dataset, col1, col2):
     # fit the model for outlier detection (default)
-    clf = LocalOutlierFactor(n_neighbors=100, contamination=0.01)
+    clf = LocalOutlierFactor(n_neighbors=20, contamination=0.01)
     # use fit_predict to compute the predicted labels of the training samples
     # (when LOF is used for outlier detection, the estimator has no predict,
     # decision_function and score_samples methods).
@@ -277,12 +291,17 @@ def RemoveMultiOutliers(dataset, col1, col2):
 
 
 for tuple in highest_corr:
-    plt.scatter(X_train_prep_mode_b1[tuple[0]],
+    plt.subplot(121).scatter(X_train_prep_mode_b1[tuple[0]],
                 X_train_prep_mode_b1[tuple[1]])
-    plt.show()
+    plt.title("Before outlier removal")
+    plt.xlabel(tuple[0])
+    plt.ylabel(tuple[1])
     RemoveMultiOutliers(X_train_prep_mode_b1, tuple[0], tuple[1])
-    plt.scatter(X_train_prep_mode_b1[tuple[0]],
+    plt.subplot(122).scatter(X_train_prep_mode_b1[tuple[0]],
                 X_train_prep_mode_b1[tuple[1]])
+    plt.title("After outlier removal")
+    plt.xlabel(tuple[0])
+    plt.ylabel(tuple[1])
     plt.show()
 
 
