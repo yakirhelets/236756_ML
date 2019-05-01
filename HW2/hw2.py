@@ -127,23 +127,33 @@ X_train_prep_mode_b1.replace(cleanup_nums, inplace=True)
 
 
 # ------------------------ B2: Outlier Detection --------------------
+def getHighestCorrelations(dataset, dropping_value=0.8):  # TODO: experiment with other values
+    # Printing the correlation matrix TODO: research correlation in pandas more
+    plt.matshow(dataset.corr())
+    plt.show()
+    # Fetching the features with the highest correlation between them
+    corr = dataset.corr().abs()
+    s = corr.unstack()
+    sorted_corrs = s.sort_values(kind="quicksort", ascending=False)
+    highest_corr_list = []
+    to_remove = []
+    for idx in range(len(sorted_corrs)):
+        if dropping_value <= sorted_corrs[idx] < 1.0:
+            highest_corr_list.append(sorted_corrs.index[idx])
+        # This part is used only for printing the highest correlations
+        else:
+            to_remove.append(sorted_corrs.index[idx])
+        # -----
+    sorted_corrs.drop(to_remove, inplace=True)
+    # This part is used only for printing the highest correlations
+    print("Highest correlations:")
+    print(sorted_corrs.iloc[1::2])
+    # -----
+    highest_corr_list = highest_corr_list[1::2]
+    return highest_corr_list
 
-# Printing the correlation matrix TODO: research correlation in pandas more
-plt.matshow(X_train_prep_mode_b1.corr())
-plt.show()
 
-# Fetching the features with the highest correlation between them
-c = X_train_prep_mode_b1.corr().abs()
-s = c.unstack()
-so = s.sort_values(kind="quicksort", ascending=False)
-dropping_value = 0.8  # TODO: experiment with other values
-highest_corr = []
-for idx in range(len(so)):
-    if dropping_value <= so[idx] < 1.0:
-        highest_corr.append(so.index[idx])
-highest_corr = highest_corr[1::2]
-print("Highest correlations:")
-print(highest_corr)
+highest_corr = getHighestCorrelations(X_train_prep_mode_b1, dropping_value=0.8)
 
 
 # TODO: write code that eliminates examples beyond a certain range, for each attribute
@@ -152,49 +162,65 @@ print(highest_corr)
 # 1. Any value, which is beyond the range of -1.5 x IQR to 1.5 x IQR
 # 2. Use capping methods. Any value which out of range of 5th and 95th percentile can be considered as outlier
 # 3. Data points, three or more standard deviation away from mean are considered outlier (Z-Score)
-def clipByIQR(dataset, col):
-    sort = sorted(dataset[col])
+def clipByIQR(dataset, dropping_factor=1.5):
     to_remove = set()
-    q1, q3 = np.percentile(sort, [25, 75])
-    iqr = q3 - q1
-    lower_bound = q1 - (1.5 * iqr)
-    upper_bound = q3 + (1.5 * iqr)
-    for row in dataset.iterrows():
-        if row[1][col] < lower_bound or row[1][col] > upper_bound:
-            to_remove.add(row[0])
+    for col in X_train_prep_mode_b1.columns.tolist():
+        # Printing
+        plt.hist(X_train_prep_mode_b1[col])
+        plt.show()
+        sort = sorted(dataset[col])
+        q1, q3 = np.percentile(sort, [25, 75])
+        iqr = q3 - q1
+        lower_bound = q1 - (dropping_factor * iqr)
+        upper_bound = q3 + (dropping_factor * iqr)
+        for row in dataset.iterrows():
+            if row[1][col] < lower_bound or row[1][col] > upper_bound:
+                to_remove.add(row[0])
+        # Printing
+        plt.hist(X_train_prep_mode_b1[col])
+        plt.show()
+
     to_remove = list(to_remove)
-    dataset.drop(to_remove, inplace=True, errors='ignore')
+    dataset.drop(to_remove, inplace=True)
 
 
-def clipByPerecentile(dataset, col):
-    sort = sorted(dataset[col])
+def clipByPerecentile(dataset, dropping_percentage=5):
     to_remove = set()
-    lower_bound, upper_bound = np.percentile(sort, [5, 95])
-    for row in dataset.iterrows():
-        if row[1][col] < lower_bound or row[1][col] > upper_bound:
-            to_remove.add(row[0])
+    for col in X_train_prep_mode_b1.columns.tolist():
+        # Printing
+        plt.hist(X_train_prep_mode_b1[col])
+        plt.show()
+        sort = sorted(dataset[col])
+        lower_bound, upper_bound = np.percentile(sort, [dropping_percentage, 100 - dropping_percentage])
+        for row in dataset.iterrows():
+            if row[1][col] < lower_bound or row[1][col] > upper_bound:
+                to_remove.add(row[0])
+        # Printing
+        plt.hist(X_train_prep_mode_b1[col])
+        plt.show()
     to_remove = list(to_remove)
-    dataset.drop(to_remove, inplace=True, errors='ignore')
+    dataset.drop(to_remove, inplace=True)
 
 
-def clipByZScore(dataset, col):
-    z_scores = stats.zscore(dataset[col])
+def clipByZScore(dataset, dropping_factor=3.0):
     to_remove = set()
-    for idx in range(len(z_scores)):
-        if abs(z_scores[idx]) > 3:
-            to_remove.add(idx)
+    for col in X_train_prep_mode_b1.columns.tolist():
+        # Printing
+        plt.hist(X_train_prep_mode_b1[col])
+        plt.show()
+        z_scores = stats.zscore(dataset[col])
+        for idx in range(len(z_scores)):
+            if abs(z_scores[idx]) > dropping_factor:
+                to_remove.add(idx)
+        # Printing
+        plt.hist(X_train_prep_mode_b1[col])
+        plt.show()
     to_remove = list(to_remove)
-    dataset.drop(to_remove, inplace=True, errors='ignore')
+    dataset.drop(to_remove, inplace=True)
 
 
 # Performing one of the above functions on every column
-for col in X_train_prep_mode_b1.columns.tolist():
-    plt.hist(X_train_prep_mode_b1[col])
-    plt.show()
-    clipByZScore(X_train_prep_mode_b1, col)  # TODO: pick the best method
-    plt.hist(X_train_prep_mode_b1[col])
-    plt.show()
-
+clipByZScore(X_train_prep_mode_b1, 4.0)  # TODO: pick the best method
 
 # Multivariate Outliers (more than one variable)
 # Using Local Outlier Factor in order to detect multivariate outliers
