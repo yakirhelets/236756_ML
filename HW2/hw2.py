@@ -10,10 +10,8 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neighbors import LocalOutlierFactor
 from mlxtend.feature_selection import SequentialFeatureSelector as SFS
 
-# TODO: search for negative values where it's impossible
 # TODO: manual imputation
 # TODO: fix linear regression
-# TODO: "mode()" on bi/multi categorial nans
 
 # -------------------------------------------------------------------
 # ------------------------ 1: Loading the data ----------------------
@@ -91,10 +89,27 @@ def getHighestCorrelations(dataset, dropping_value=0.8):  # TODO: experiment wit
     return highest_corr_list
 
 
-
 # -------------------------------------------------------------------
 # ------------------------ A: Imputation ----------------------------
 # -------------------------------------------------------------------
+
+# Data cleanup - remove negative values where it's impossible to have them
+nonNegativeCols = {
+    'Avg_monthly_expense_when_under_age_21', 'AVG_lottary_expanses', 'Avg_monthly_expense_on_pets_or_plants',
+    'Financial_balance_score_(0-1)', '%Of_Household_Income', 'Yearly_IncomeK',
+    'Garden_sqr_meter_per_person_in_residancy_area', 'Avg_Residancy_Altitude', 'Yearly_ExpensesK',
+    '%Time_invested_in_work', 'Avg_monthly_household_cost', 'Phone_minutes_10_years', 'Avg_size_per_room',
+    'Avg_monthly_income_all_years', 'Last_school_grades', 'Number_of_differnt_parties_voted_for',
+    'Number_of_valued_Kneset_members', 'Num_of_kids_born_last_10_years'}
+
+for col in nonNegativeCols:
+    # print(np.min(X_train_prep[[col]]))
+    i_th_column = X_train_prep[[col]]
+    i_th_column.where(i_th_column > 0, inplace=True, other=np.nan)
+    X_train_prep[[col]] = i_th_column
+    # print(np.min(X_train_prep[[col]]))
+
+# X_train_prep.to_csv("no_neg.csv")
 
 # Method 1: Remove examples with at least one NaN
 
