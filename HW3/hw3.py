@@ -1,28 +1,23 @@
-import pandas as pd
-import numpy as np
-from scipy import stats
-from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.neighbors import KNeighborsClassifier
+import numpy as np
+import pandas as pd
 from sklearn import tree
 from sklearn.linear_model import Perceptron
 from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import LinearSVC
-from sklearn.neighbors import LocalOutlierFactor
+from sklearn.ensemble import RandomForestClassifier
 from . import data_preparation
 
-
 # -------------------------------------------------------------------
-# ------------------------ 1: Prepare the data ----------------------
+# ------------------------ 0: Prepare the data ----------------------
 # -------------------------------------------------------------------
 
 data_preparation.prepare_data()
 
 
 # -------------------------------------------------------------------
-# ------------------------ 2: Load the train set --------------------
+# ------------------------ 1: Load the training set -----------------
 # -------------------------------------------------------------------
 
 X_train_file = 'X_train.csv'
@@ -33,32 +28,38 @@ Y_train = pd.read_csv(Y_train_file)
 
 
 # -------------------------------------------------------------------
-# ------------------------ 3: Train models --------------------------
+# ------------------------ 2: Train models --------------------------
 # -------------------------------------------------------------------
 
-# ------------------------ 3A: KNN ----------------------------------
+# ------------------------ 2A: K-Nearest Neighbours -----------------
 
+# KNN
 KNN_classifier = KNeighborsClassifier(n_neighbors=1)
 KNN_classifier.fit(X_train, Y_train)
 
-# ------------------------ 3B: Decision Tree ------------------------
+# ------------------------ 2B: Decision Trees ------------------------
 
+# Decision Tree Classifier
 DT_classifier = tree.DecisionTreeClassifier()
 DT_classifier = DT_classifier.fit(X_train, Y_train)
 
-# ------------------------ 3C: Linear Models -------------------------
+# Random Forest
+RF_classifier = RandomForestClassifier(n_estimators=100, max_depth=2, random_state=0)
+RF_classifier = RF_classifier.fit(X_train, Y_train)
+
+# ------------------------ 2C: Linear Models -------------------------
 
 # Perceptron
 Per_classifier = Perceptron(tol=1e-3, random_state=0)
 Per_classifier = Per_classifier.fit(X_train, Y_train)
 
-# LinearSVC
-SVC_classifier = LinearSVC(tol=1e-5, random_state=0)
-SVC_classifier = SVC_classifier.fit(X_train, Y_train)
+# # LinearSVC
+# SVC_classifier = LinearSVC(tol=1e-5, random_state=0)
+# SVC_classifier = SVC_classifier.fit(X_train, Y_train)
 
 # LMS
 
-# ------------------------ 3D: Naive Bayes ---------------------------
+# ------------------------ 2D: Naive Bayes ---------------------------
 
 # GaussianNB
 GNB_classifier = GaussianNB()
@@ -66,15 +67,37 @@ GNB_classifier = GNB_classifier.fit(X_train, Y_train)
 
 
 # -------------------------------------------------------------------
-# ------------------------ 4: Load the validation set ---------------
+# ------------------------ 3: Load the validation set ---------------
 # -------------------------------------------------------------------
 
 X_validation_file = 'X_validation.csv'
 X_validation = pd.read_csv(X_validation_file)
 
+Y_validation_file = 'Y_validation.csv'
+Y_validation = pd.read_csv(Y_validation_file)
 
 
 
+# -------------------------------------------------------------------
+# ------------------------ 4: Hyper-Parameters Tuning ---------------
+# -------------------------------------------------------------------
+
+# TODO: determine where to insert cross validation
+# KNN_prediction = KNN_classifier.predict(X_test)
+# DT_prediction = DT_classifier.predict(X_test)
+# RF_prediction = RF_classifier.predict(X_test)
+# Per_prediction = Per_classifier.predict(X_test)
+# SVC_prediction = SVC_classifier.predict(X_test)
+# GNB_prediction = GNB_classifier.predict(X_test)
+
+# -------------------------------------------------------------------
+# ------------------------ 5: Best Model Selection ------------------
+# -------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------
+# ------------------------ 6: Predictions ---------------------------
+# -------------------------------------------------------------------
 
 # Predictions
 
@@ -82,19 +105,30 @@ X_test_file = 'X_test.csv'
 X_test = pd.read_csv(X_test_file)
 
 
-KNN_prediction = KNN_classifier.predict(X_test)
-DT_prediction = DT_classifier.predict(X_test)
-Per_prediction = Per_classifier.predict(X_test)
-SVC_prediction = SVC_classifier.predict(X_test)
-GNB_prediction = GNB_classifier.predict(X_test)
 
+# ------------------------------ 6A ---------------------------------
+
+# selected_classifier = ...
+# selected_classifier_prediction = selected_classifier.predict(X_test)
+# selected_classifier_prediction.to_csv("prediction_results.csv")
+
+# ------------------------------ 6B ---------------------------------
+# The party that will win the majority of votes
+# TODO: use mode on "selected_classifier_prediction"
+
+# ------------------------------ 6C ---------------------------------
+# Probable voters per party
+
+# ------------------------------ 6D ---------------------------------
+# Factor which by manipulating we can change the winning party
+
+# ------------------------------ 6E ---------------------------------
+# Confusion matrix and Overall test error
 
 
 # -------------------------------------------------------------------
 # ------------------------ *: Helper functions ----------------------
 # -------------------------------------------------------------------
-
-
 
 
 def printHistogram(dataframe):
