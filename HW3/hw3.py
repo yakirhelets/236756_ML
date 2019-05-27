@@ -7,7 +7,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import LinearSVC
 from sklearn.ensemble import RandomForestClassifier
-from . import data_preparation
+from HW3 import data_preparation
 from sklearn.metrics import confusion_matrix
 
 
