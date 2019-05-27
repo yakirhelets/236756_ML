@@ -8,6 +8,8 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import LinearSVC
 from sklearn.ensemble import RandomForestClassifier
 from . import data_preparation
+from sklearn.metrics import confusion_matrix
+
 
 # -------------------------------------------------------------------
 # ------------------------ 0: Prepare the data ----------------------
@@ -30,6 +32,11 @@ Y_train = pd.read_csv(Y_train_file)
 # -------------------------------------------------------------------
 # ------------------------ 2: Train models --------------------------
 # -------------------------------------------------------------------
+
+# TODO: do a K-fold CV on 7 options for each calssifier and select the best 3 combinations to continue to stage 4
+
+# TODO: insert here a function that creates graphs of x-y
+# TODO: while x is the classifier parameter and y is the precision rate
 
 # ------------------------ 2A: K-Nearest Neighbours -----------------
 
@@ -82,7 +89,12 @@ Y_validation = pd.read_csv(Y_validation_file)
 # ------------------------ 4: Hyper-Parameters Tuning ---------------
 # -------------------------------------------------------------------
 
-# TODO: determine where to insert cross validation
+# TODO: on the best 3 from each classifier - train on the ENTIRE train set and evaluate using the validation set
+# TODO: select the best one of all of the models and use it for stage 6
+
+
+# TODO: maybe use F1 score here
+
 # KNN_prediction = KNN_classifier.predict(X_test)
 # DT_prediction = DT_classifier.predict(X_test)
 # RF_prediction = RF_classifier.predict(X_test)
@@ -105,16 +117,20 @@ X_test_file = 'X_test.csv'
 X_test = pd.read_csv(X_test_file)
 
 
+Y_test_file = 'Y_test.csv'
+Y_test = pd.read_csv(Y_test_file)
+
 
 # ------------------------------ 6A ---------------------------------
 
+# The selected classifier with the selected parameters
 # selected_classifier = ...
 # selected_classifier_prediction = selected_classifier.predict(X_test)
 # selected_classifier_prediction.to_csv("prediction_results.csv")
 
 # ------------------------------ 6B ---------------------------------
 # The party that will win the majority of votes
-# TODO: use mode on "selected_classifier_prediction"
+# TODO: write a function that uses mode on "selected_classifier_prediction" (one column)
 
 # ------------------------------ 6C ---------------------------------
 # Probable voters per party
@@ -124,6 +140,11 @@ X_test = pd.read_csv(X_test_file)
 
 # ------------------------------ 6E ---------------------------------
 # Confusion matrix and Overall test error
+
+# TODO: uncomment confusion matrix code below
+# confusion_matrix = confusion_matrix(Y_test, selected_classifier_prediction)
+# confusion_matrix_DF = pd.DataFrame(confusion_matrix, columns=['Predicted Pos', 'Predicted Neg'], index=['Actual Pos', 'Actual Neg'])
+# print(confusion_matrix_DF)
 
 
 # -------------------------------------------------------------------
