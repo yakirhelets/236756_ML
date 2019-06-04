@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn import tree
+from sklearn.tree import DecisionTreeClassifier, export_graphviz
 from sklearn.linear_model import Perceptron
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
@@ -10,6 +10,9 @@ from sklearn.ensemble import RandomForestClassifier
 from HW3 import data_preparation
 from sklearn.metrics import confusion_matrix, f1_score
 from sklearn.model_selection import cross_val_score, cross_val_predict
+from sklearn.externals.six import StringIO
+from IPython.display import Image
+import pydotplus
 
 # -------------------------------------------------------------------
 # ------------------------ *: Helper functions ----------------------
@@ -51,6 +54,12 @@ def k_fold_cv_score(KNN_classifier, X_train, Y_train):
 def clear_arrays():
     score_array.clear()
     parameters_array.clear()
+
+def printTree(DT_classifier):
+    dt_graph = StringIO()
+    export_graphviz(DT_classifier, out_file=dt_graph, filled=True, rounded=True, special_characters=True)
+    graph = pydotplus.graph_from_dot_data(dt_graph.getvalue())
+    Image(graph.create_png())
 
 
 # -------------------------------------------------------------------
@@ -102,7 +111,7 @@ for cr in ("gini", "entropy"):
     for min_sam in (1.0, 2, 3):
         parameters_array.append((cr, min_sam))
 
-        DT_classifier = tree.DecisionTreeClassifier(criterion=cr, min_samples_split=min_sam)
+        DT_classifier = DecisionTreeClassifier(criterion=cr, min_samples_split=min_sam)
         score = k_fold_cv_score(DT_classifier, X_train, Y_train)
         score_array.append(score)
 # produce diagram with the parameters and score
@@ -124,7 +133,7 @@ showDiagram(parameters_array, score_array, title='Average score - Random Forest 
 
 clear_arrays()
 
-Perceptron
+# Perceptron
 for max_it in (10, 50, 100, 200, 500, 1000, 2000):
     parameters_array.append(max_it)
     Per_classifier = Perceptron(max_iter=max_it)
@@ -179,8 +188,6 @@ Y_validation = pd.read_csv(Y_validation_file, header=None, names=['Vote'])
 # ------------------------ 4: Hyper-Parameters Tuning ---------------
 # -------------------------------------------------------------------
 
-# TODO: select the best one of all of the models and use it for stage 6
-
 # KNN
 clear_arrays()
 
@@ -203,7 +210,7 @@ for cr in ("gini", "entropy"):
     for min_sam in (2, 3):
         parameters_array.append((cr, min_sam))
 
-        DT_classifier = tree.DecisionTreeClassifier(criterion=cr, min_samples_split=min_sam)
+        DT_classifier = DecisionTreeClassifier(criterion=cr, min_samples_split=min_sam)
         DT_classifier = DT_classifier.fit(X_train, Y_train)
         DT_prediction = DT_classifier.predict(X_validation)
         f1 = f1_score(Y_validation, DT_prediction, average='micro')
@@ -274,11 +281,13 @@ f1 = f1_score(Y_validation, KNN_prediction, average='micro')
 score_array.append(f1)
 
 parameters_array.append('DTree(crit=ent, min_samp=3')
-DT_classifier = tree.DecisionTreeClassifier(criterion='entropy', min_samples_split=3)
+DT_classifier = DecisionTreeClassifier(criterion='entropy', min_samples_split=3)
 DT_classifier = DT_classifier.fit(X_train, Y_train)
 DT_prediction = DT_classifier.predict(X_validation)
 f1 = f1_score(Y_validation, DT_prediction, average='micro')
 score_array.append(f1)
+
+printTree(DT_classifier)
 
 parameters_array.append('RandF(n_est=13, max_d=None')
 RF_classifier = RandomForestClassifier(n_estimators=13, max_depth=None)
@@ -310,34 +319,35 @@ showDiagram(parameters_array, score_array, title='F1 score - Combined - Validati
 # ------------------------ 5: Best Model Selection ------------------
 # -------------------------------------------------------------------
 
-# RF_classifier = RandomForestClassifier(n_estimators=13, max_depth=None)
-# RF_classifier = RF_classifier.fit(X_train, Y_train)
+RF_classifier = RandomForestClassifier(n_estimators=13, max_depth=None)
+RF_classifier = RF_classifier.fit(X_train, Y_train)
 
-# # -------------------------------------------------------------------
-# # ------------------------ 6: Predictions ---------------------------
-# # -------------------------------------------------------------------
-#
-# # Predictions
-#
-# X_test_file = 'X_test.csv'
-# X_test = pd.read_csv(X_test_file)
-#
-#
-# Y_test_file = 'Y_test.csv'
-# Y_test = pd.read_csv(Y_test_file)
-#
-#
-# # ------------------------------ 6A ---------------------------------
-#
-# # The selected classifier with the selected parameters
-# # selected_classifier = ...
-# # selected_classifier_prediction = selected_classifier.predict(X_test)
-# # selected_classifier_prediction.to_csv("prediction_results.csv")
-#
-# # ------------------------------ 6B ---------------------------------
-# # The party that will win the majority of votes
-# # TODO: write a function that uses mode on "selected_classifier_prediction" (one column)
-#
+# -------------------------------------------------------------------
+# ------------------------ 6: Predictions ---------------------------
+# -------------------------------------------------------------------
+
+# Predictions
+
+X_test_file = 'X_test.csv'
+X_test = pd.read_csv(X_test_file)
+
+
+Y_test_file = 'Y_test.csv'
+Y_test = pd.read_csv(Y_test_file)
+
+
+# ------------------------------ 6A ---------------------------------
+
+# The selected classifier with the selected parameters
+selected_classifier = RF_classifier
+selected_classifier_prediction = selected_classifier.predict(X_test)
+selected_classifier_prediction.to_csv("prediction_results.csv")
+
+# ------------------------------ 6B ---------------------------------
+# The party that will win the majority of votes
+
+printHistogram(selected_classifier_prediction)
+
 # # ------------------------------ 6C ---------------------------------
 # # Probable voters per party
 #

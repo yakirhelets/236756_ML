@@ -174,8 +174,9 @@ def prepare_data():
     # Multinominal/Polynominal
     # iterate over all Multinominal/Polynominal columns
     def multinominalModification(dataset):
-        multiColumns = {'Most_Important_Issue', 'Will_vote_only_large_party', 'Age_group', 'Main_transportation',
-                        'Occupation'}
+        multiColumns = {'Occupation_Satisfaction', 'Most_Important_Issue', 'Will_vote_only_large_party', 'Age_group',
+                        'Main_transportation', 'Occupation', 'Last_school_grades',
+                        'Number_of_differnt_parties_voted_for', 'Num_of_kids_born_last_10_years'}
         for column in multiColumns:
             # for each column determine the set of unique values
             column_values_set = set(dataset[column])
