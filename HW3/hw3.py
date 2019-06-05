@@ -362,9 +362,12 @@ printHistogram(selected_classifier_prediction_df)
 # ------------------------------ 6C ---------------------------------
 # Probable voters per party
 
-voting_threshold = 0.4 # TODO: consider changing to 0.3 and in the report
+voting_threshold = 0.4
 classes = selected_classifier.classes_
 predictions = selected_classifier.predict_proba(X_test)
+
+predictions_df = pd.DataFrame(predictions)
+predictions_df.to_csv("predictions_probabilities.csv")
 
 probable_voters = []
 
@@ -375,14 +378,10 @@ for i in range(len(predictions)):
             probable_classes_per_voter.append(classes[j])
     probable_voters.append(probable_classes_per_voter)
 
-print(probable_voters)
+probable_voters_df = pd.DataFrame(probable_voters)
+probable_voters_df.to_csv("probable_voters.csv")
 
 # ------------------------------ 6D ---------------------------------
-# Factor which by manipulating we can change the winning party
-
-
-
-# ------------------------------ 6E ---------------------------------
 # Confusion matrix and Overall test error
 
 
@@ -405,3 +404,13 @@ print("F1: " + str(f1*100))
 accuracy = np.sum(Y_test_as_array == selected_classifier_prediction) / len(Y_test_as_array)
 print("Accuracy: " + str(accuracy*100))
 print("Error: " + str((1-accuracy)*100))
+
+
+# -------------------------------------------------------------------
+# ------------------------ 7: Bonus Part ----------------------------
+# -------------------------------------------------------------------
+
+# ------------------------------ 7A ---------------------------------
+# Factor which by manipulating we can change the winning party
+
+
