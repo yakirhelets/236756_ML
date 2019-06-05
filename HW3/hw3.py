@@ -27,7 +27,7 @@ def printHistogram(dataframe):
     df_vals = list(df.values)
     y_pos = np.arange(len(df_vals))
     plt.bar(y_pos, df_vals, align='center')
-    plt.xticks(y_pos, df_idx)
+    plt.xticks(y_pos, df_idx, fontsize=7)
     plt.show()
 
 
@@ -85,233 +85,233 @@ Y_train = pd.read_csv(Y_train_file, header=None, names=['Vote'])
 # ------------------------ 2: Train models --------------------------
 # -------------------------------------------------------------------
 
-k_folds = 10
-
-# ------------------------ 2A: K-Nearest Neighbours -----------------
-
-score_array = []
-parameters_array = []
-
-# KNN
-
-for i in (1, 3, 5, 7, 9, 13, 15):
-    parameters_array.append(i)
-    KNN_classifier = KNeighborsClassifier(n_neighbors=i)
-    score = k_fold_cv_score(KNN_classifier, X_train, Y_train)
-    score_array.append(score)
-# produce diagram with the parameters and score
-showDiagram(parameters_array, score_array, title='Average score - KNN - K-fold CV', parameters="K value", color='green')
-
-# ------------------------ 2B: Decision Trees ------------------------
-
-clear_arrays()
-
-# Decision Tree Classifier
-for cr in ("gini", "entropy"):
-    for min_sam in (1.0, 2, 3):
-        parameters_array.append((cr, min_sam))
-
-        DT_classifier = DecisionTreeClassifier(criterion=cr, min_samples_split=min_sam)
-        score = k_fold_cv_score(DT_classifier, X_train, Y_train)
-        score_array.append(score)
-# produce diagram with the parameters and score
-showDiagram(parameters_array, score_array, title='Average score - Decision Tree - K-fold CV', parameters="criterion, min_samples_split", color='green')
-
-clear_arrays()
-
-# Random Forest
-for n_est in (3, 10, 13):
-    for max_d in (3, 5, None):
-        parameters_array.append((n_est, max_d))
-        RF_classifier = RandomForestClassifier(n_estimators=n_est, max_depth=max_d)
-        score = k_fold_cv_score(RF_classifier, X_train, Y_train)
-        score_array.append(score)
-# produce diagram with the parameters and score
-showDiagram(parameters_array, score_array, title='Average score - Random Forest - K-fold CV', parameters="n_estimators, max_depth", color='green')
-
-# ------------------------ 2C: Linear Models -------------------------
-
-clear_arrays()
-
-# Perceptron
-for max_it in (10, 50, 100, 200, 500, 1000, 2000):
-    parameters_array.append(max_it)
-    Per_classifier = Perceptron(max_iter=max_it)
-    score = k_fold_cv_score(Per_classifier, X_train, Y_train)
-    score_array.append(score)
-# produce diagram with the parameters and score
-showDiagram(parameters_array, score_array, title='Average score - Perceptron - K-fold CV', parameters="max_iter", color='green')
-
-# LinearSVC
-# SVC_classifier = LinearSVC(tol=1e-5, random_state=0)
-# SVC_classifier = SVC_classifier.fit(X_train, Y_train)
-
-# # LMS
+# k_folds = 10
 #
-# ------------------------ 2D: Naive Bayes ---------------------------
-
-clear_arrays()
-
-# GaussianNB
-for var_sm in (1e-1, 1e-3, 1e-5, 1e-9, 1e-11, 1e-13, 1e-15):
-    parameters_array.append(var_sm)
-    GNB_classifier = GaussianNB(priors=None, var_smoothing=var_sm)
-    score = k_fold_cv_score(GNB_classifier, X_train, Y_train)
-    score_array.append(score)
-# produce diagram with the parameters and score
-showDiagram(parameters_array, score_array, title='Average score - Gaussian Naive Bayes - K-fold CV', parameters="var_smoothing", color='green')
-
-clear_arrays()
-
-# GaussianNB
-for var_sm in (1e-7, 1e-8, 1e-9, 1e-10, 1e-11, 1e-12, 1e-13):
-    parameters_array.append(var_sm)
-    GNB_classifier = GaussianNB(priors=None, var_smoothing=var_sm)
-    score = k_fold_cv_score(GNB_classifier, X_train, Y_train)
-    score_array.append(score)
-# produce diagram with the parameters and score
-showDiagram(parameters_array, score_array, title='Average score - Gaussian Naive Bayes - K-fold CV', parameters="var_smoothing", color='green')
-
+# # ------------------------ 2A: K-Nearest Neighbours -----------------
 #
-# -------------------------------------------------------------------
-# ------------------------ 3: Load the validation set ---------------
-# -------------------------------------------------------------------
-
-X_validation_file = 'X_validation.csv'
-X_validation = pd.read_csv(X_validation_file)
-
-Y_validation_file = 'Y_validation.csv'
-Y_validation = pd.read_csv(Y_validation_file, header=None, names=['Vote'])
-
-
-# -------------------------------------------------------------------
-# ------------------------ 4: Hyper-Parameters Tuning ---------------
-# -------------------------------------------------------------------
-
-# KNN
-clear_arrays()
-
-for i in (1, 13, 15):
-    parameters_array.append(i)
-
-    KNN_classifier = KNeighborsClassifier(n_neighbors=i)
-    KNN_classifier = KNN_classifier.fit(X_train, Y_train)
-    KNN_prediction = KNN_classifier.predict(X_validation)
-    f1 = f1_score(Y_validation, KNN_prediction, average='micro')
-
-    score_array.append(f1)
-# produce diagram with the parameters and score
-showDiagram(parameters_array, score_array, title='F1 score - KNN - Validation set', parameters="K value", color='brown')
-
-clear_arrays()
-
-# Decision Tree Classifier
-for cr in ("gini", "entropy"):
-    for min_sam in (2, 3):
-        parameters_array.append((cr, min_sam))
-
-        DT_classifier = DecisionTreeClassifier(criterion=cr, min_samples_split=min_sam)
-        DT_classifier = DT_classifier.fit(X_train, Y_train)
-        DT_prediction = DT_classifier.predict(X_validation)
-        f1 = f1_score(Y_validation, DT_prediction, average='micro')
-
-        score_array.append(f1)
-
-# produce diagram with the parameters and score
-showDiagram(parameters_array, score_array, title='F1 score - Decision Tree - Validation set', parameters="criterion, min_samples_split", color='brown')
-
-
-clear_arrays()
-
-# Random Forest
-for n_est in (3, 10, 13):
-    parameters_array.append((n_est, None))
-
-    RF_classifier = RandomForestClassifier(n_estimators=n_est, max_depth=None)
-    RF_classifier = RF_classifier.fit(X_train, Y_train)
-    RF_prediction = RF_classifier.predict(X_validation)
-    f1 = f1_score(Y_validation, RF_prediction, average='micro')
-
-    score_array.append(f1)
-
-# produce diagram with the parameters and score
-showDiagram(parameters_array, score_array, title='F1 score - Random Forest - Validation set', parameters="n_estimators, max_depth", color='brown')
-
-clear_arrays()
-
-# Perceptron
-for max_it in (100, 500, 2000):
-    parameters_array.append(max_it)
-
-    Per_classifier = Perceptron(max_iter=max_it)
-    Per_classifier = Per_classifier.fit(X_train, Y_train)
-    Per_prediction = Per_classifier.predict(X_validation)
-    f1 = f1_score(Y_validation, Per_prediction, average='micro')
-
-    score_array.append(f1)
-
-# produce diagram with the parameters and score
-showDiagram(parameters_array, score_array, title='F1 score - Perceptron - Validation set', parameters="max_iter", color='brown')
-
-clear_arrays()
-
-# GaussianNB
-for var_sm in (1e-9, 1e-10, 1e-11):
-    parameters_array.append(var_sm)
-
-    GNB_classifier = GaussianNB(priors=None, var_smoothing=var_sm)
-    GNB_classifier = GNB_classifier.fit(X_train, Y_train)
-    GNB_prediction = GNB_classifier.predict(X_validation)
-    f1 = f1_score(Y_validation, GNB_prediction, average='micro')
-
-    score_array.append(f1)
-
-# produce diagram with the parameters and score
-showDiagram(parameters_array, score_array, title='F1 score - Gaussian Naive Bayes - Validation set', parameters="var_smoothing", color='brown')
-
-clear_arrays()
-
-# Final Diagram before selecting the best model
-
-parameters_array.append(('KNN(k=1)'))
-KNN_classifier = KNeighborsClassifier(n_neighbors=1)
-KNN_classifier = KNN_classifier.fit(X_train, Y_train)
-KNN_prediction = KNN_classifier.predict(X_validation)
-f1 = f1_score(Y_validation, KNN_prediction, average='micro')
-score_array.append(f1)
-
-parameters_array.append('DTree(crit=ent, min_samp=3')
-DT_classifier = DecisionTreeClassifier(criterion='entropy', min_samples_split=3)
-DT_classifier = DT_classifier.fit(X_train, Y_train)
-DT_prediction = DT_classifier.predict(X_validation)
-f1 = f1_score(Y_validation, DT_prediction, average='micro')
-score_array.append(f1)
-
-printTree(DT_classifier)
-
-parameters_array.append('RandF(n_est=13, max_d=None')
-RF_classifier = RandomForestClassifier(n_estimators=13, max_depth=None)
-RF_classifier = RF_classifier.fit(X_train, Y_train)
-RF_prediction = RF_classifier.predict(X_validation)
-f1 = f1_score(Y_validation, RF_prediction, average='micro')
-score_array.append(f1)
-
-parameters_array.append('Percep(max_iter=2000)')
-Per_classifier = Perceptron(max_iter=2000)
-Per_classifier = Per_classifier.fit(X_train, Y_train)
-Per_prediction = Per_classifier.predict(X_validation)
-f1 = f1_score(Y_validation, Per_prediction, average='micro')
-score_array.append(f1)
-
-parameters_array.append('GaussNB(var_smooth=1e-9')
-GNB_classifier = GaussianNB(priors=None, var_smoothing=1e-9)
-GNB_classifier = GNB_classifier.fit(X_train, Y_train)
-GNB_prediction = GNB_classifier.predict(X_validation)
-f1 = f1_score(Y_validation, GNB_prediction, average='micro')
-score_array.append(f1)
-
-# produce diagram with the parameters and score
-showDiagram(parameters_array, score_array, title='F1 score - Combined - Validation set', parameters="parameters", color='orange')
+# score_array = []
+# parameters_array = []
+#
+# # KNN
+#
+# for i in (1, 3, 5, 7, 9, 13, 15):
+#     parameters_array.append(i)
+#     KNN_classifier = KNeighborsClassifier(n_neighbors=i)
+#     score = k_fold_cv_score(KNN_classifier, X_train, Y_train)
+#     score_array.append(score)
+# # produce diagram with the parameters and score
+# showDiagram(parameters_array, score_array, title='Average score - KNN - K-fold CV', parameters="K value", color='green')
+#
+# # ------------------------ 2B: Decision Trees ------------------------
+#
+# clear_arrays()
+#
+# # Decision Tree Classifier
+# for cr in ("gini", "entropy"):
+#     for min_sam in (1.0, 2, 3):
+#         parameters_array.append((cr, min_sam))
+#
+#         DT_classifier = DecisionTreeClassifier(criterion=cr, min_samples_split=min_sam)
+#         score = k_fold_cv_score(DT_classifier, X_train, Y_train)
+#         score_array.append(score)
+# # produce diagram with the parameters and score
+# showDiagram(parameters_array, score_array, title='Average score - Decision Tree - K-fold CV', parameters="criterion, min_samples_split", color='green')
+#
+# clear_arrays()
+#
+# # Random Forest
+# for n_est in (3, 10, 13):
+#     for max_d in (3, 5, None):
+#         parameters_array.append((n_est, max_d))
+#         RF_classifier = RandomForestClassifier(n_estimators=n_est, max_depth=max_d)
+#         score = k_fold_cv_score(RF_classifier, X_train, Y_train)
+#         score_array.append(score)
+# # produce diagram with the parameters and score
+# showDiagram(parameters_array, score_array, title='Average score - Random Forest - K-fold CV', parameters="n_estimators, max_depth", color='green')
+#
+# # ------------------------ 2C: Linear Models -------------------------
+#
+# clear_arrays()
+#
+# # Perceptron
+# for max_it in (10, 50, 100, 200, 500, 1000, 2000):
+#     parameters_array.append(max_it)
+#     Per_classifier = Perceptron(max_iter=max_it)
+#     score = k_fold_cv_score(Per_classifier, X_train, Y_train)
+#     score_array.append(score)
+# # produce diagram with the parameters and score
+# showDiagram(parameters_array, score_array, title='Average score - Perceptron - K-fold CV', parameters="max_iter", color='green')
+#
+# # LinearSVC
+# # SVC_classifier = LinearSVC(tol=1e-5, random_state=0)
+# # SVC_classifier = SVC_classifier.fit(X_train, Y_train)
+#
+# # # LMS
+# #
+# # ------------------------ 2D: Naive Bayes ---------------------------
+#
+# clear_arrays()
+#
+# # GaussianNB
+# for var_sm in (1e-1, 1e-3, 1e-5, 1e-9, 1e-11, 1e-13, 1e-15):
+#     parameters_array.append(var_sm)
+#     GNB_classifier = GaussianNB(priors=None, var_smoothing=var_sm)
+#     score = k_fold_cv_score(GNB_classifier, X_train, Y_train)
+#     score_array.append(score)
+# # produce diagram with the parameters and score
+# showDiagram(parameters_array, score_array, title='Average score - Gaussian Naive Bayes - K-fold CV', parameters="var_smoothing", color='green')
+#
+# clear_arrays()
+#
+# # GaussianNB
+# for var_sm in (1e-7, 1e-8, 1e-9, 1e-10, 1e-11, 1e-12, 1e-13):
+#     parameters_array.append(var_sm)
+#     GNB_classifier = GaussianNB(priors=None, var_smoothing=var_sm)
+#     score = k_fold_cv_score(GNB_classifier, X_train, Y_train)
+#     score_array.append(score)
+# # produce diagram with the parameters and score
+# showDiagram(parameters_array, score_array, title='Average score - Gaussian Naive Bayes - K-fold CV', parameters="var_smoothing", color='green')
+#
+# #
+# # -------------------------------------------------------------------
+# # ------------------------ 3: Load the validation set ---------------
+# # -------------------------------------------------------------------
+#
+# X_validation_file = 'X_validation.csv'
+# X_validation = pd.read_csv(X_validation_file)
+#
+# Y_validation_file = 'Y_validation.csv'
+# Y_validation = pd.read_csv(Y_validation_file, header=None, names=['Vote'])
+#
+#
+# # -------------------------------------------------------------------
+# # ------------------------ 4: Hyper-Parameters Tuning ---------------
+# # -------------------------------------------------------------------
+#
+# # KNN
+# clear_arrays()
+#
+# for i in (1, 13, 15):
+#     parameters_array.append(i)
+#
+#     KNN_classifier = KNeighborsClassifier(n_neighbors=i)
+#     KNN_classifier = KNN_classifier.fit(X_train, Y_train)
+#     KNN_prediction = KNN_classifier.predict(X_validation)
+#     f1 = f1_score(Y_validation, KNN_prediction, average='micro')
+#
+#     score_array.append(f1)
+# # produce diagram with the parameters and score
+# showDiagram(parameters_array, score_array, title='F1 score - KNN - Validation set', parameters="K value", color='brown')
+#
+# clear_arrays()
+#
+# # Decision Tree Classifier
+# for cr in ("gini", "entropy"):
+#     for min_sam in (2, 3):
+#         parameters_array.append((cr, min_sam))
+#
+#         DT_classifier = DecisionTreeClassifier(criterion=cr, min_samples_split=min_sam)
+#         DT_classifier = DT_classifier.fit(X_train, Y_train)
+#         DT_prediction = DT_classifier.predict(X_validation)
+#         f1 = f1_score(Y_validation, DT_prediction, average='micro')
+#
+#         score_array.append(f1)
+#
+# # produce diagram with the parameters and score
+# showDiagram(parameters_array, score_array, title='F1 score - Decision Tree - Validation set', parameters="criterion, min_samples_split", color='brown')
+#
+#
+# clear_arrays()
+#
+# # Random Forest
+# for n_est in (3, 10, 13):
+#     parameters_array.append((n_est, None))
+#
+#     RF_classifier = RandomForestClassifier(n_estimators=n_est, max_depth=None)
+#     RF_classifier = RF_classifier.fit(X_train, Y_train)
+#     RF_prediction = RF_classifier.predict(X_validation)
+#     f1 = f1_score(Y_validation, RF_prediction, average='micro')
+#
+#     score_array.append(f1)
+#
+# # produce diagram with the parameters and score
+# showDiagram(parameters_array, score_array, title='F1 score - Random Forest - Validation set', parameters="n_estimators, max_depth", color='brown')
+#
+# clear_arrays()
+#
+# # Perceptron
+# for max_it in (100, 500, 2000):
+#     parameters_array.append(max_it)
+#
+#     Per_classifier = Perceptron(max_iter=max_it)
+#     Per_classifier = Per_classifier.fit(X_train, Y_train)
+#     Per_prediction = Per_classifier.predict(X_validation)
+#     f1 = f1_score(Y_validation, Per_prediction, average='micro')
+#
+#     score_array.append(f1)
+#
+# # produce diagram with the parameters and score
+# showDiagram(parameters_array, score_array, title='F1 score - Perceptron - Validation set', parameters="max_iter", color='brown')
+#
+# clear_arrays()
+#
+# # GaussianNB
+# for var_sm in (1e-9, 1e-10, 1e-11):
+#     parameters_array.append(var_sm)
+#
+#     GNB_classifier = GaussianNB(priors=None, var_smoothing=var_sm)
+#     GNB_classifier = GNB_classifier.fit(X_train, Y_train)
+#     GNB_prediction = GNB_classifier.predict(X_validation)
+#     f1 = f1_score(Y_validation, GNB_prediction, average='micro')
+#
+#     score_array.append(f1)
+#
+# # produce diagram with the parameters and score
+# showDiagram(parameters_array, score_array, title='F1 score - Gaussian Naive Bayes - Validation set', parameters="var_smoothing", color='brown')
+#
+# clear_arrays()
+#
+# # Final Diagram before selecting the best model
+#
+# parameters_array.append(('KNN(k=1)'))
+# KNN_classifier = KNeighborsClassifier(n_neighbors=1)
+# KNN_classifier = KNN_classifier.fit(X_train, Y_train)
+# KNN_prediction = KNN_classifier.predict(X_validation)
+# f1 = f1_score(Y_validation, KNN_prediction, average='micro')
+# score_array.append(f1)
+#
+# parameters_array.append('DTree(crit=ent, min_samp=3')
+# DT_classifier = DecisionTreeClassifier(criterion='entropy', min_samples_split=3)
+# DT_classifier = DT_classifier.fit(X_train, Y_train)
+# DT_prediction = DT_classifier.predict(X_validation)
+# f1 = f1_score(Y_validation, DT_prediction, average='micro')
+# score_array.append(f1)
+#
+# # printTree(DT_classifier)
+#
+# parameters_array.append('RandF(n_est=13, max_d=None')
+# RF_classifier = RandomForestClassifier(n_estimators=13, max_depth=None)
+# RF_classifier = RF_classifier.fit(X_train, Y_train)
+# RF_prediction = RF_classifier.predict(X_validation)
+# f1 = f1_score(Y_validation, RF_prediction, average='micro')
+# score_array.append(f1)
+#
+# parameters_array.append('Percep(max_iter=2000)')
+# Per_classifier = Perceptron(max_iter=2000)
+# Per_classifier = Per_classifier.fit(X_train, Y_train)
+# Per_prediction = Per_classifier.predict(X_validation)
+# f1 = f1_score(Y_validation, Per_prediction, average='micro')
+# score_array.append(f1)
+#
+# parameters_array.append('GaussNB(var_smooth=1e-9')
+# GNB_classifier = GaussianNB(priors=None, var_smoothing=1e-9)
+# GNB_classifier = GNB_classifier.fit(X_train, Y_train)
+# GNB_prediction = GNB_classifier.predict(X_validation)
+# f1 = f1_score(Y_validation, GNB_prediction, average='micro')
+# score_array.append(f1)
+#
+# # produce diagram with the parameters and score
+# showDiagram(parameters_array, score_array, title='F1 score - Combined - Validation set', parameters="parameters", color='orange')
 
 
 
@@ -319,8 +319,8 @@ showDiagram(parameters_array, score_array, title='F1 score - Combined - Validati
 # ------------------------ 5: Best Model Selection ------------------
 # -------------------------------------------------------------------
 
-RF_classifier = RandomForestClassifier(n_estimators=13, max_depth=None)
-RF_classifier = RF_classifier.fit(X_train, Y_train)
+selected_classifier = RandomForestClassifier(n_estimators=13, max_depth=None)
+selected_classifier = selected_classifier.fit(X_train, Y_train)
 
 # -------------------------------------------------------------------
 # ------------------------ 6: Predictions ---------------------------
@@ -333,31 +333,75 @@ X_test = pd.read_csv(X_test_file)
 
 
 Y_test_file = 'Y_test.csv'
-Y_test = pd.read_csv(Y_test_file)
+Y_test = pd.read_csv(Y_test_file, header=None, names=['Vote'])
 
 
 # ------------------------------ 6A ---------------------------------
 
 # The selected classifier with the selected parameters
-selected_classifier = RF_classifier
 selected_classifier_prediction = selected_classifier.predict(X_test)
-selected_classifier_prediction.to_csv("prediction_results.csv")
+selected_classifier_prediction_df = pd.DataFrame(selected_classifier_prediction)
+selected_classifier_prediction_df.to_csv("prediction_results.csv")
+
+
+Y_test_as_array = []
+for i in range(len(Y_test.values)):
+    Y_test_as_array.append(Y_test.values[i][0])
+
+Y_test_as_array = np.array(Y_test_as_array)
+
+
+
 
 # ------------------------------ 6B ---------------------------------
 # The party that will win the majority of votes
 
-printHistogram(selected_classifier_prediction)
+selected_classifier_prediction_df.columns = ['Vote']
+printHistogram(selected_classifier_prediction_df)
 
-# # ------------------------------ 6C ---------------------------------
-# # Probable voters per party
-#
-# # ------------------------------ 6D ---------------------------------
-# # Factor which by manipulating we can change the winning party
-#
-# # ------------------------------ 6E ---------------------------------
-# # Confusion matrix and Overall test error
-#
-# # TODO: uncomment confusion matrix code below
-# # confusion_matrix = confusion_matrix(Y_test, selected_classifier_prediction)
-# # confusion_matrix_DF = pd.DataFrame(confusion_matrix, columns=['Predicted Pos', 'Predicted Neg'], index=['Actual Pos', 'Actual Neg'])
-# # print(confusion_matrix_DF)
+# ------------------------------ 6C ---------------------------------
+# Probable voters per party
+
+voting_threshold = 0.4 # TODO: consider changing to 0.3 and in the report
+classes = selected_classifier.classes_
+predictions = selected_classifier.predict_proba(X_test)
+
+probable_voters = []
+
+for i in range(len(predictions)):
+    probable_classes_per_voter = []
+    for j in range(len(predictions[0])):
+        if predictions[i][j] > voting_threshold:
+            probable_classes_per_voter.append(classes[j])
+    probable_voters.append(probable_classes_per_voter)
+
+print(probable_voters)
+
+# ------------------------------ 6D ---------------------------------
+# Factor which by manipulating we can change the winning party
+
+
+
+# ------------------------------ 6E ---------------------------------
+# Confusion matrix and Overall test error
+
+
+confusion_mat = confusion_matrix(Y_test_as_array, selected_classifier_prediction, labels=["Khakis", "Oranges", "Purples", "Turquoises",
+                                                                                          "Yellows", "Blues", "Whites", "Greens",
+                                                                                          "Violets", "Browns", "Reds", "Greys",
+                                                                                          "Pinks"])
+confusion_mat_DF = pd.DataFrame(confusion_mat, columns=["Predicted Khakis", "Predicted Oranges", "Predicted Purples", "Predicted Turquoises",
+                                                          "Predicted Yellows", "Predicted Blues", "Predicted Whites", "Predicted Greens",
+                                                          "Predicted Violets", "Predicted Browns", "Predicted Reds", "Predicted Greys",
+                                                          "Predicted Pinks"],
+                                                index=["Actual Khakis", "Actual Oranges", "Actual Purples", "Actual Turquoises",
+                                                       "Actual Yellows", "Actual Blues", "Actual Whites", "Actual Greens",
+                                                       "Actual Violets", "Actual Browns", "Actual Reds", "Actual Greys",
+                                                       "Actual Pinks"])
+confusion_mat_DF.to_csv("confusion_matrix.csv")
+
+f1 = f1_score(Y_test, selected_classifier_prediction_df, average='micro')
+print("F1: " + str(f1*100))
+accuracy = np.sum(Y_test_as_array == selected_classifier_prediction) / len(Y_test_as_array)
+print("Accuracy: " + str(accuracy*100))
+print("Error: " + str((1-accuracy)*100))
