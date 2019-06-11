@@ -1,0 +1,14 @@
+,Predicted Khakis,Predicted Oranges,Predicted Purples,Predicted Turquoises,Predicted Yellows,Predicted Blues,Predicted Whites,Predicted Greens,Predicted Violets,Predicted Browns,Predicted Reds,Predicted Greys,Predicted Pinks
+Actual Khakis,387,0,2,4,3,3,0,0,0,1,0,0,0
+Actual Oranges,0,63,0,0,1,0,0,0,0,0,1,2,0
+Actual Purples,0,0,506,0,0,0,3,0,0,4,0,1,2
+Actual Turquoises,24,0,0,76,2,0,0,0,0,0,0,0,0
+Actual Yellows,2,0,0,0,74,5,0,2,0,0,0,0,1
+Actual Blues,1,0,0,1,6,92,0,0,0,0,0,0,0
+Actual Whites,0,1,5,0,0,0,71,0,0,16,0,0,1
+Actual Greens,0,0,1,0,2,0,0,113,0,0,0,0,0
+Actual Violets,31,0,1,9,0,1,0,0,47,0,0,1,0
+Actual Browns,0,0,5,0,1,0,2,0,0,183,0,0,0
+Actual Reds,0,1,1,0,0,0,0,0,0,0,82,9,1
+Actual Greys,0,0,1,0,0,0,0,0,0,0,0,83,0
+Actual Pinks,0,0,0,0,1,0,1,0,0,9,0,0,51
