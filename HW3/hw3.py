@@ -44,7 +44,7 @@ def showDiagram(parameters_array, score_array, title, parameters, color):
 def k_fold_cv_score(KNN_classifier, X_train, Y_train):
     # KFCV
     cross_val_scores = cross_val_score(KNN_classifier, X_train, Y_train, cv=k_folds, scoring='accuracy')
-    # avergae score of classifier
+    # average score of classifier
     return cross_val_scores.mean()
 
 def clear_arrays():
