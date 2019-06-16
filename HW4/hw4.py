@@ -48,16 +48,17 @@ def plot_gmm(gmm, X, label=True, ax=None):
     for pos, covar, w in zip(gmm.means_, gmm.covariances_, gmm.weights_):
         draw_ellipse(pos, covar, alpha=w * w_factor)
 
+
 k_folds = 10
 
 # -------------------------------------------------------------------
 # ---------------- 1: Load the prepared training set ----------------
 # -------------------------------------------------------------------
 
-X_train_file = '../HW3/X_train.csv'
+X_train_file = 'X_train.csv'
 X_train = pd.read_csv(X_train_file)
 
-Y_train_file = '../HW3/Y_train.csv'
+Y_train_file = 'Y_train.csv'
 Y_train = pd.read_csv(Y_train_file, header=None, names=['Vote'])
 
 
@@ -73,11 +74,11 @@ GM_classifier = GaussianMixture(n_components=1, max_iter=100)
 # ---------------- 3: Load the prepared test set --------------------
 # -------------------------------------------------------------------
 
-X_test_file = '../HW3/X_test.csv'
+X_test_file = 'X_test.csv'
 X_test = pd.read_csv(X_test_file)
 
 
-Y_test_file = '../HW3/Y_test.csv'
+Y_test_file = 'Y_test.csv'
 Y_test = pd.read_csv(Y_test_file, header=None, names=['Vote'])
 
 # -------------------------------------------------------------------
@@ -97,19 +98,35 @@ Y_test = pd.read_csv(Y_test_file, header=None, names=['Vote'])
 # cross_val_scores = cross_val_score(GM_classifier, X_train, Y_train, cv=k_folds, scoring='accuracy')
 # print(cross_val_scores)
 
+
 # Clustering model
 
-kmeans = KMeans(n_clusters=2); # 2 beacuse we want a coalition and an opposition - #TODO add to report
-kmeans.fit(X_train)
+X_values = X_train.values
+colors = (0, 0, 1)
+area = np.pi
 
-fig = plt.figure(figsize=(8,8))
-ax = fig.add_subplot(1,1,1)
-ax.scatter(X_train.iloc[:,0], X_train.iloc[:,1], s=50, c='b', label="data points")
-# TODO change colors later
-ax.scatter(kmeans.cluster_centers_[0][0], kmeans.cluster_centers_[0][1], s=200, c='g', marker='s', label='center_1')
-ax.scatter(kmeans.cluster_centers_[1][0], kmeans.cluster_centers_[1][1], s=200, c='r', marker='s', label='center_2')
-ax.grid()
-ax.legend();
-ax.set_xlabel("feature_1")
-ax.set_ylabel("feature_2")
-ax.set_title("TITLE")  # TODO change later
+cols_num_wanted = 8
+
+for i in range(1, cols_num_wanted + 1):
+    for j in range(i, cols_num_wanted + 1):
+
+        if i == j:
+            continue
+        kmeans = KMeans(n_clusters=2)  # 2 because we want a coalition and an opposition - #TODO add to report
+        X_selected_values = X_values[:, [i, j]]
+        kmeans.fit(X_selected_values)
+
+        x = X_selected_values[:, 0]
+        y = X_selected_values[:, 1]
+
+        # Plot
+        plt.scatter(x, y, s=area, c=colors, alpha=0.5)
+        plt.scatter(kmeans.cluster_centers_[0][0], kmeans.cluster_centers_[0][1], s=200, c='r', marker='s', label='center_1')
+        plt.scatter(kmeans.cluster_centers_[1][0], kmeans.cluster_centers_[1][1], s=200, c='g', marker='s', label='center_2')
+        plt.grid()
+        plt.legend()
+
+        plt.title(X_train.columns[i] + " vs. " + X_train.columns[j])
+        plt.xlabel(X_train.columns[i])
+        plt.ylabel(X_train.columns[j])
+        plt.show()
