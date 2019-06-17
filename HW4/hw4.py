@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.cluster import KMeans
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
+from sklearn.naive_bayes import GaussianNB, MultinomialNB
 
 from HW3 import data_preparation, automatic_model_selection
 from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_score
@@ -31,15 +33,32 @@ Y_train = pd.read_csv(Y_train_file, header=None, names=['Vote'])
 # ---------------- 2: Train generative model ------------------------
 # -------------------------------------------------------------------
 
-# TODO: use cross validation
+
+# LDA
+LDA_classifier = LinearDiscriminantAnalysis()
+LDA_cross_val_scores = cross_val_score(LDA_classifier, X_train, Y_train, cv=k_folds, scoring='accuracy')
+LDA_classifier.fit(X_train, Y_train)
+
+# QDA
+QDA_calssifier = QuadraticDiscriminantAnalysis()
+QDA_cross_val_scores = cross_val_score(QDA_calssifier, X_train, Y_train, cv=k_folds, scoring='accuracy')
+QDA_calssifier.fit(X_train, Y_train)
+
+# Gaussian Naive Bayes
+GNB_classifier = GaussianNB()
+GNB_cross_val_scores = cross_val_score(GNB_classifier, X_train, Y_train, cv=k_folds, scoring='accuracy')
+GNB_classifier.fit(X_train, Y_train)
+
+# Multinomial Naive Bayes
+MNB_classifier = MultinomialNB()
+MNB_cross_val_scores = cross_val_score(MNB_classifier, X_train, Y_train, cv=k_folds, scoring='accuracy')
+MNB_classifier.fit(X_train, Y_train)
 
 
 
 # -------------------------------------------------------------------
 # ---------------- 3: Train clustering model ------------------------
 # -------------------------------------------------------------------
-
-# TODO: use cross validation
 
 X_values = X_train.values
 colors = (0, 0, 1)
@@ -77,8 +96,6 @@ cols_num_wanted = 8
 # ------------------------ 3A: Party-Cluster Belonging --------------
 
 
-# TODO for each voting class, check how many percent have weighted_edu_rank > 0 and how many percent have < 0, print to console.
-
 parties = ["Khakis", "Oranges", "Purples", "Turquoises", "Yellows", "Blues", "Whites",
            "Greens", "Violets", "Browns", "Reds", "Greys", "Pinks"]
 
@@ -87,7 +104,9 @@ all_data = pd.concat([X_train, Y_train], axis=1)
 
 total = all_data.shape[0]
 
-threshold = 0.97
+threshold = 0.985
+
+parties_voting_percentage = {}
 
 # Division according to Weighted_education_rank
 
@@ -98,6 +117,7 @@ print("Division according to Weighted_education_rank")
 for i in parties:
     all_data_copy = all_data.copy(deep=True)
     all_data_copy = all_data_copy[all_data_copy['Vote'] == i]
+    parties_voting_percentage[i] = all_data_copy.shape[0] / total  ## Filling the percentages of voting among the parties
     cluster_A_vals = all_data_copy[all_data_copy['Weighted_education_rank'] > 0]
     cluster_A_percent = cluster_A_vals.shape[0] / total
     cluster_B_percent = 1-cluster_A_percent
@@ -108,7 +128,6 @@ for i in parties:
         cluster_A_parties_weighted.append(i)
 
 print("**********")
-
 
 # Division according to Avg_Residancy_Altitude
 
@@ -131,11 +150,74 @@ for i in parties:
 print("**********")
 
 
+# Division according to Avg_education_importance
+
+cluster_A_parties_education = []
+cluster_B_parties_education = []
+
+print("Division according to Avg_education_importance")
+for i in parties:
+    all_data_copy = all_data.copy(deep=True)
+    all_data_copy = all_data_copy[all_data_copy['Vote'] == i]
+    cluster_A_vals = all_data_copy[all_data_copy['Avg_education_importance'] > -0.5]
+    cluster_A_percent = cluster_A_vals.shape[0] / total
+    cluster_B_percent = 1-cluster_A_percent
+    print(i + ": Cluster A = " + str(cluster_A_percent) + ", Cluster B = " + str(1-cluster_A_percent))
+    if cluster_B_percent > threshold:
+        cluster_B_parties_education.append(i)
+    else:
+        cluster_A_parties_education.append(i)
+
+print("**********")
+
+
 # ------------------------ 3B: Cluster-Voting percents --------------
 
 
+print(parties_voting_percentage)
+
+# Weighted_education_rank
+
+cluster_A_parties_weighted_percent = 0
+
+for i in cluster_A_parties_weighted:
+    cluster_A_parties_weighted_percent = cluster_A_parties_weighted_percent + parties_voting_percentage[i]
+
+print("**********")
+
+print("Cluster A percents (Weighted): " + str(cluster_A_parties_weighted_percent))
+print(cluster_A_parties_weighted)
+print("Cluster B percents (Weighted): " + str(1-cluster_A_parties_weighted_percent))
+print(cluster_B_parties_weighted)
+
+# Avg_Residancy_Altitude
+
+cluster_A_parties_residancy_percent = 0
+
+for i in cluster_A_parties_residancy:
+    cluster_A_parties_residancy_percent = cluster_A_parties_residancy_percent + parties_voting_percentage[i]
+
+print("**********")
+
+print("Cluster A percents (Residancy): " + str(cluster_A_parties_residancy_percent))
+print(cluster_A_parties_residancy)
+print("Cluster B percents (Residancy): " + str(1-cluster_A_parties_residancy_percent))
+print(cluster_B_parties_residancy)
 
 
+# Avg_education_importance
+
+cluster_A_parties_education_percent = 0
+
+for i in cluster_A_parties_education:
+    cluster_A_parties_education_percent = cluster_A_parties_education_percent + parties_voting_percentage[i]
+
+print("**********")
+
+print("Cluster A percents (Education): " + str(cluster_A_parties_education_percent))
+print(cluster_A_parties_education)
+print("Cluster B percents (Education): " + str(1-cluster_A_parties_education_percent))
+print(cluster_B_parties_education)
 
 
 # -------------------------------------------------------------------
@@ -153,9 +235,17 @@ Y_test = pd.read_csv(Y_test_file, header=None, names=['Vote'])
 # ---------------- 4: Apply and check performance -------------------
 # -------------------------------------------------------------------
 
+print("LDA classifier score = " + str(LDA_cross_val_scores))
+LDA_classifier.predict(X_test)
+
+print("QDA classifier score = " + str(QDA_cross_val_scores))
+QDA_calssifier.predict(X_test)
+
+print("GNB classifier score = " + str(GNB_cross_val_scores))
+GNB_classifier.predict(X_test)
+
+print("MNB classifier score = " + str(MNB_cross_val_scores))
+MNB_classifier.predict(X_test)
 
 
 
-
-# cross_val_scores = cross_val_score(GM_classifier, X_train, Y_train, cv=k_folds, scoring='accuracy')
-# print(cross_val_scores)
