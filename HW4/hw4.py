@@ -3,18 +3,31 @@ import numpy as np
 import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
-from sklearn.naive_bayes import GaussianNB, MultinomialNB
-
-from HW3 import data_preparation, automatic_model_selection
-from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_score
-from sklearn.model_selection import cross_val_score, cross_val_predict
-from sklearn.mixture import GaussianMixture
-from matplotlib.patches import Ellipse
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import f1_score, precision_score, recall_score
+from sklearn.model_selection import cross_val_score
 
 # -------------------------------------------------------------------
 # ------------------------ *: Helper functions ----------------------
 # -------------------------------------------------------------------
 
+
+def printResults(classifier, X_test_set, Y_test_set, X_train_set, Y_train_set, classifier_name):
+    Y_test_as_array = []
+    for i in range(len(Y_test_set.values)):
+        Y_test_as_array.append(Y_test_set.values[i][0])
+    Y_test_as_array = np.array(Y_test_as_array)
+
+    cv_scores = 100* np.mean(cross_val_score(classifier, X_train_set, Y_train_set, cv=k_folds, scoring='accuracy'))
+    classifier_prediction = classifier.predict(X_test_set)
+    f1 = f1_score(Y_test_set, classifier_prediction, average='micro') * 100
+    accuracy = 100 * np.sum(Y_test_as_array == classifier_prediction) / len(Y_test_as_array)
+    error = 100-accuracy
+    precision = 100* precision_score(Y_test_set, classifier_prediction, average='micro')
+    recall = 100* recall_score(Y_test, classifier_prediction, average='micro')
+
+    print(classifier_name + " >>> CV score: " + str(cv_scores) + ", F1: " + str(f1) + ", Accuracy: " + str(accuracy) +
+          ", Error: " + str(error) + ", Precision: " + str(precision) + ", Recall: " + str(recall))
 
 k_folds = 10
 
@@ -34,26 +47,17 @@ Y_train = pd.read_csv(Y_train_file, header=None, names=['Vote'])
 # -------------------------------------------------------------------
 
 
+# QDA
+QDA_classifier = QuadraticDiscriminantAnalysis()
+QDA_classifier.fit(X_train, Y_train)
+
 # LDA
 LDA_classifier = LinearDiscriminantAnalysis()
-LDA_cross_val_scores = cross_val_score(LDA_classifier, X_train, Y_train, cv=k_folds, scoring='accuracy')
 LDA_classifier.fit(X_train, Y_train)
-
-# QDA
-QDA_calssifier = QuadraticDiscriminantAnalysis()
-QDA_cross_val_scores = cross_val_score(QDA_calssifier, X_train, Y_train, cv=k_folds, scoring='accuracy')
-QDA_calssifier.fit(X_train, Y_train)
 
 # Gaussian Naive Bayes
 GNB_classifier = GaussianNB()
-GNB_cross_val_scores = cross_val_score(GNB_classifier, X_train, Y_train, cv=k_folds, scoring='accuracy')
 GNB_classifier.fit(X_train, Y_train)
-
-# Multinomial Naive Bayes
-MNB_classifier = MultinomialNB()
-MNB_cross_val_scores = cross_val_score(MNB_classifier, X_train, Y_train, cv=k_folds, scoring='accuracy')
-MNB_classifier.fit(X_train, Y_train)
-
 
 
 # -------------------------------------------------------------------
@@ -235,17 +239,13 @@ Y_test = pd.read_csv(Y_test_file, header=None, names=['Vote'])
 # ---------------- 4: Apply and check performance -------------------
 # -------------------------------------------------------------------
 
-print("LDA classifier score = " + str(LDA_cross_val_scores))
-LDA_classifier.predict(X_test)
+printResults(QDA_classifier, X_test, Y_test, X_train, Y_train, "QDA")
+printResults(LDA_classifier, X_test, Y_test, X_train, Y_train, "LDA")
+printResults(GNB_classifier, X_test, Y_test, X_train, Y_train, "GNB")
 
-print("QDA classifier score = " + str(QDA_cross_val_scores))
-QDA_calssifier.predict(X_test)
+LDA_probs = LDA_classifier.predict_proba(X_test)
+GNB_probs = GNB_classifier.predict_proba(X_test)
 
-print("GNB classifier score = " + str(GNB_cross_val_scores))
-GNB_classifier.predict(X_test)
+print(LDA_probs.shape)
 
-print("MNB classifier score = " + str(MNB_cross_val_scores))
-MNB_classifier.predict(X_test)
-
-
-
+# foreach example, take maximum
