@@ -246,6 +246,29 @@ printResults(GNB_classifier, X_test, Y_test, X_train, Y_train, "GNB")
 LDA_probs = LDA_classifier.predict_proba(X_test)
 GNB_probs = GNB_classifier.predict_proba(X_test)
 
-print(LDA_probs.shape)
+top_two_parties_pairs = []
+
+# TODO apply on GNB_probs as well
+
+for i in LDA_probs:
+
+    first_result = np.where(i == np.amax(i))
+    first_index = first_result[0][0]
+
+    np.delete(i, first_index)
+
+    second_result = np.where(i == np.amax(i))
+    second_index = second_result[0][0]
+
+    if second_index == first_index:
+        second_index = second_index + 1
+
+    res_array = []
+    res_array.append(first_index)
+    res_array.append(second_index)
+
+    top_two_parties_pairs.append(res_array)
+
+# yakirs_function(top_two_parties_pairs)
 
 # foreach example, take maximum
