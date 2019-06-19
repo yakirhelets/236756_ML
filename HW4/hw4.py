@@ -29,6 +29,22 @@ def printResults(classifier, X_test_set, Y_test_set, X_train_set, Y_train_set, c
     print(classifier_name + " >>> CV score: " + str(cv_scores) + ", F1: " + str(f1) + ", Accuracy: " + str(accuracy) +
           ", Error: " + str(error) + ", Precision: " + str(precision) + ", Recall: " + str(recall))
 
+
+def takeSecond(elem):
+    return elem[1]
+
+def getCoalition(pairs):
+    coalition = {}
+    for pair in pairs:
+        if pair in coalition:
+            coalition[pair] = coalition[pair]+1
+        else:
+            coalition[pair] = 0
+
+    # print(coalition)
+    print(sorted(list(coalition.items()), key=takeSecond, reverse=True))
+
+
 k_folds = 10
 
 # -------------------------------------------------------------------
@@ -250,40 +266,19 @@ top_two_parties_pairs = []
 
 # TODO apply on GNB_probs as well
 
+
 for i in LDA_probs:
 
-    first_result = np.where(i == np.amax(i))
-    first_index = first_result[0][0]
+    # sort array
+    temp_arr = sorted(i, reverse=True)
+    # get first and second indices
+    first_value = temp_arr[0]
+    second_value = temp_arr[1]
 
-    np.delete(i, first_index)
+    first_index = np.where(i == first_value)[0][0]
+    second_index = np.where(i == second_value)[0][0]
 
-    second_result = np.where(i == np.amax(i))
-    second_index = second_result[0][0]
-
-    if second_index == first_index:
-        second_index = second_index + 1
-
-    # res_array = []
-    # res_array.append(first_index)
-    # res_array.append(second_index)
-
-
-    # top_two_parties_pairs.append(res_array)
     top_two_parties_pairs.append((first_index,second_index))
-
-def takeSecond(elem):
-    return elem[1]
-
-def getCoalition(pairs):
-    coalition = {}
-    for pair in pairs:
-        if pair in coalition:
-            coalition[pair] = coalition[pair]+1
-        else:
-            coalition[pair] = 0
-
-    # print(coalition)
-    print(sorted(list(coalition.items()), key=takeSecond, reverse=True))
 
 
 getCoalition(top_two_parties_pairs)
