@@ -263,12 +263,28 @@ for i in LDA_probs:
     if second_index == first_index:
         second_index = second_index + 1
 
-    res_array = []
-    res_array.append(first_index)
-    res_array.append(second_index)
+    # res_array = []
+    # res_array.append(first_index)
+    # res_array.append(second_index)
 
-    top_two_parties_pairs.append(res_array)
 
-# yakirs_function(top_two_parties_pairs)
+    # top_two_parties_pairs.append(res_array)
+    top_two_parties_pairs.append((first_index,second_index))
 
+def takeSecond(elem):
+    return elem[1]
+
+def getCoalition(pairs):
+    coalition = {}
+    for pair in pairs:
+        if pair in coalition:
+            coalition[pair] = coalition[pair]+1
+        else:
+            coalition[pair] = 0
+
+    # print(coalition)
+    print(sorted(list(coalition.items()), key=takeSecond, reverse=True))
+
+
+getCoalition(top_two_parties_pairs)
 # foreach example, take maximum
