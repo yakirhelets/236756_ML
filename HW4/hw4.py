@@ -277,6 +277,8 @@ for i in LDA_probs:
 
     first_index = np.where(i == first_value)[0][0]
     second_index = np.where(i == second_value)[0][0]
+    if second_index == first_index:
+        second_index = np.where(i == second_value)[0][1]
 
     top_two_parties_pairs.append((first_index,second_index))
 
