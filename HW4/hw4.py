@@ -44,19 +44,54 @@ def getCoalition(pairs):
     # print(coalition)
     print(sorted(list(coalition.items()), key=takeSecond, reverse=True))
 
+def get_coalition_by_probs(probs):
+    top_two_parties_pairs = []
+    for prob in probs:
+        # sort array
+        temp_arr = sorted(prob, reverse=True)
+        # get first and second indices
+        first_value = temp_arr[0]
+        second_value = temp_arr[1]
+
+        first_index = np.where(prob == first_value)[0][0]
+        second_index = np.where(prob == second_value)[0][0]
+        if second_index == first_index:
+            second_index = np.where(prob == second_value)[0][1]
+
+        if (first_index < second_index):
+            tuple = first_index, second_index
+        else:
+            tuple = second_index, first_index
+        top_two_parties_pairs.append(tuple)
+
+    getCoalition(top_two_parties_pairs)
 
 k_folds = 10
 
 # -------------------------------------------------------------------
-# ---------------- 1: Load the prepared training set ----------------
+# ---------------- 1: Load the prepared sets ------------------------
 # -------------------------------------------------------------------
 
+# Train sets load
 X_train_file = 'X_train.csv'
 X_train = pd.read_csv(X_train_file)
 
 Y_train_file = 'Y_train.csv'
 Y_train = pd.read_csv(Y_train_file, header=None, names=['Vote'])
 
+# Validation sets load
+X_validation_file = 'X_validation.csv'
+X_validation = pd.read_csv(X_validation_file)
+
+Y_validation_file = 'Y_validation.csv'
+Y_validation = pd.read_csv(Y_validation_file, header=None, names=['Vote'])
+
+# Test sets load
+X_test_file = 'X_test.csv'
+X_test = pd.read_csv(X_test_file)
+
+Y_test_file = 'Y_test.csv'
+Y_test = pd.read_csv(Y_test_file, header=None, names=['Vote'])
 
 # -------------------------------------------------------------------
 # ---------------- 2: Train generative model ------------------------
@@ -72,7 +107,7 @@ LDA_classifier = LinearDiscriminantAnalysis()
 LDA_classifier.fit(X_train, Y_train)
 
 # Gaussian Naive Bayes
-GNB_classifier = GaussianNB()
+GNB_classifier = GaussianNB(var_smoothing=1e-9)
 GNB_classifier.fit(X_train, Y_train)
 
 
@@ -119,10 +154,26 @@ cols_num_wanted = 8
 parties = ["Khakis", "Oranges", "Purples", "Turquoises", "Yellows", "Blues", "Whites",
            "Greens", "Violets", "Browns", "Reds", "Greys", "Pinks"]
 
+print(sorted(parties))
+
 X_train = X_train.set_index('Unnamed: 0')
 all_data = pd.concat([X_train, Y_train], axis=1)
 
+# *** validation set on clustering results ***
+
+# X_validation = X_validation.set_index('Unnamed: 0')
+# all_data = pd.concat([X_validation, Y_validation], axis=1)
+
 total = all_data.shape[0]
+
+# Percentages of parties among the entire train set
+
+print("Percentages of all parties - among the entire train set")
+for party in parties:
+    all_data_copy = all_data.copy(deep=True)
+    all_data_copy = all_data_copy[all_data_copy['Vote'] == party]
+    percentage = all_data_copy.shape[0] / total  ## Filling the percentages of voting among the parties
+    print("Party: " + str(party) + ", percentage: " + str(percentage))
 
 threshold = 0.985
 
@@ -170,27 +221,6 @@ for i in parties:
 print("**********")
 
 
-# Division according to Avg_education_importance
-
-cluster_A_parties_education = []
-cluster_B_parties_education = []
-
-print("Division according to Avg_education_importance")
-for i in parties:
-    all_data_copy = all_data.copy(deep=True)
-    all_data_copy = all_data_copy[all_data_copy['Vote'] == i]
-    cluster_A_vals = all_data_copy[all_data_copy['Avg_education_importance'] > -0.5]
-    cluster_A_percent = cluster_A_vals.shape[0] / total
-    cluster_B_percent = 1-cluster_A_percent
-    print(i + ": Cluster A = " + str(cluster_A_percent) + ", Cluster B = " + str(1-cluster_A_percent))
-    if cluster_B_percent > threshold:
-        cluster_B_parties_education.append(i)
-    else:
-        cluster_A_parties_education.append(i)
-
-print("**********")
-
-
 # ------------------------ 3B: Cluster-Voting percents --------------
 
 
@@ -225,32 +255,6 @@ print("Cluster B percents (Residancy): " + str(1-cluster_A_parties_residancy_per
 print(cluster_B_parties_residancy)
 
 
-# Avg_education_importance
-
-cluster_A_parties_education_percent = 0
-
-for i in cluster_A_parties_education:
-    cluster_A_parties_education_percent = cluster_A_parties_education_percent + parties_voting_percentage[i]
-
-print("**********")
-
-print("Cluster A percents (Education): " + str(cluster_A_parties_education_percent))
-print(cluster_A_parties_education)
-print("Cluster B percents (Education): " + str(1-cluster_A_parties_education_percent))
-print(cluster_B_parties_education)
-
-
-# -------------------------------------------------------------------
-# ---------------- 4: Load the prepared test set --------------------
-# -------------------------------------------------------------------
-
-X_test_file = 'X_test.csv'
-X_test = pd.read_csv(X_test_file)
-
-
-Y_test_file = 'Y_test.csv'
-Y_test = pd.read_csv(Y_test_file, header=None, names=['Vote'])
-
 # -------------------------------------------------------------------
 # ---------------- 4: Apply and check performance -------------------
 # -------------------------------------------------------------------
@@ -262,31 +266,15 @@ printResults(GNB_classifier, X_test, Y_test, X_train, Y_train, "GNB")
 LDA_probs = LDA_classifier.predict_proba(X_test)
 GNB_probs = GNB_classifier.predict_proba(X_test)
 
-top_two_parties_pairs = []
-
-# TODO apply on GNB_probs as well
 
 
-for i in LDA_probs:
+# Get coalition according to LDA
 
-    # sort array
-    temp_arr = sorted(i, reverse=True)
-    # get first and second indices
-    first_value = temp_arr[0]
-    second_value = temp_arr[1]
+get_coalition_by_probs(LDA_probs)
 
-    first_index = np.where(i == first_value)[0][0]
-    second_index = np.where(i == second_value)[0][0]
-    if second_index == first_index:
-        second_index = np.where(i == second_value)[0][1]
+# Get coalition according to GNB
 
-    top_two_parties_pairs.append(sorted([first_index, second_index]))
+get_coalition_by_probs(GNB_probs)
 
-# print(top_two_parties_pairs)
-temp = []
-for pair in top_two_parties_pairs:
-    temp.append(tuple(pair))
 
-top_two_parties_pairs = temp
-getCoalition(top_two_parties_pairs)
-# foreach example, take maximum
+
