@@ -39,7 +39,7 @@ def getCoalition(pairs):
         if pair in coalition:
             coalition[pair] = coalition[pair]+1
         else:
-            coalition[pair] = 0
+            coalition[pair] = 1
 
     # print(coalition)
     print(sorted(list(coalition.items()), key=takeSecond, reverse=True))
@@ -280,8 +280,13 @@ for i in LDA_probs:
     if second_index == first_index:
         second_index = np.where(i == second_value)[0][1]
 
-    top_two_parties_pairs.append((first_index,second_index))
+    top_two_parties_pairs.append(sorted([first_index, second_index]))
 
+# print(top_two_parties_pairs)
+temp = []
+for pair in top_two_parties_pairs:
+    temp.append(tuple(pair))
 
+top_two_parties_pairs = temp
 getCoalition(top_two_parties_pairs)
 # foreach example, take maximum
