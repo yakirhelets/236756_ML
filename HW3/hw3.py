@@ -20,7 +20,9 @@ def printHistogram(dataframe):
     df = dataframe['Vote']
     df = df.value_counts()
     df_idx = list(df.index)
+    print(df_idx)
     df_vals = list(df.values)
+    print(df_vals / sum(df_vals))
     y_pos = np.arange(len(df_vals))
     plt.bar(y_pos, df_vals, align='center')
     plt.xticks(y_pos, df_idx, fontsize=7)

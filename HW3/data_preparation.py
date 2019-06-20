@@ -3,6 +3,8 @@ import pandas as pd
 from scipy import stats
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import MinMaxScaler
+
 
 def prepare_data():
 
@@ -150,6 +152,18 @@ def prepare_data():
     zscoreScaling(X_train)
     zscoreScaling(X_validation)
     zscoreScaling(X_test)
+
+    def minmaxScaling(dataset):
+        scaler = MinMaxScaler(feature_range=(-1, 1))
+
+        min_max_attributes = ["Yearly_ExpensesK"]
+
+        # actual min_max scaling
+        dataset[min_max_attributes] = scaler.fit_transform(dataset[min_max_attributes])
+
+    minmaxScaling(X_train)
+    minmaxScaling(X_validation)
+    minmaxScaling(X_test)
 
 
     # -------------------------------------------------------------------

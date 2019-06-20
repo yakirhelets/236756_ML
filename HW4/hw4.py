@@ -121,31 +121,31 @@ area = np.pi
 
 cols_num_wanted = 8
 
-# for i in range(1, cols_num_wanted + 1):
-#     for j in range(i, cols_num_wanted + 1):
-#
-#         # We don't want a comparison between a feature and itself
-#         if i == j:
-#             continue
-#
-#         kmeans = KMeans(n_clusters=2)
-#         X_selected_values = X_values[:, [i, j]]
-#         kmeans.fit(X_selected_values)
-#
-#         x = X_selected_values[:, 0]
-#         y = X_selected_values[:, 1]
-#
-#         # Plot
-#         plt.scatter(x, y, s=area, c=colors, alpha=0.5)
-#         plt.scatter(kmeans.cluster_centers_[0][0], kmeans.cluster_centers_[0][1], s=200, c='r', marker='s', label='center_1')
-#         plt.scatter(kmeans.cluster_centers_[1][0], kmeans.cluster_centers_[1][1], s=200, c='g', marker='s', label='center_2')
-#         plt.grid()
-#         plt.legend()
-#
-#         plt.title(X_train.columns[i] + " vs. " + X_train.columns[j])
-#         plt.xlabel(X_train.columns[i])
-#         plt.ylabel(X_train.columns[j])
-#         plt.show()
+for i in range(1, cols_num_wanted + 1):
+    for j in range(i, cols_num_wanted + 1):
+
+        # We don't want a comparison between a feature and itself
+        if i == j:
+            continue
+
+        kmeans = KMeans(n_clusters=2)
+        X_selected_values = X_values[:, [i, j]]
+        kmeans.fit(X_selected_values)
+
+        x = X_selected_values[:, 0]
+        y = X_selected_values[:, 1]
+
+        # Plot
+        plt.scatter(x, y, s=area, c=colors, alpha=0.5)
+        plt.scatter(kmeans.cluster_centers_[0][0], kmeans.cluster_centers_[0][1], s=200, c='r', marker='s', label='center_1')
+        plt.scatter(kmeans.cluster_centers_[1][0], kmeans.cluster_centers_[1][1], s=200, c='g', marker='s', label='center_2')
+        plt.grid()
+        plt.legend()
+
+        plt.title(X_train.columns[i] + " vs. " + X_train.columns[j])
+        plt.xlabel(X_train.columns[i])
+        plt.ylabel(X_train.columns[j])
+        plt.show()
 
 
 # ------------------------ 3A: Party-Cluster Belonging --------------
@@ -159,7 +159,7 @@ print(sorted(parties))
 X_train = X_train.set_index('Unnamed: 0')
 all_data = pd.concat([X_train, Y_train], axis=1)
 
-# *** validation set on clustering results ***
+# *** validation set on clustering results - for the end of section 3 ***
 
 # X_validation = X_validation.set_index('Unnamed: 0')
 # all_data = pd.concat([X_validation, Y_validation], axis=1)
@@ -175,9 +175,17 @@ for party in parties:
     percentage = all_data_copy.shape[0] / total  ## Filling the percentages of voting among the parties
     print("Party: " + str(party) + ", percentage: " + str(percentage))
 
-threshold = 0.985
+print("**********")
+
+similarity_threshold = 0.985
 
 parties_voting_percentage = {}
+
+# Changing the feature "Average Residancy Altitude" for section 5-c
+
+# all_data = all_data.copy(deep=True)
+# all_data['Weighted_education_rank'] = np.where(all_data.Weighted_education_rank > 0, all_data.Weighted_education_rank-2, all_data.Weighted_education_rank)
+# all_data['Avg_Residancy_Altitude'] = np.where(all_data.Avg_Residancy_Altitude > 0.25, all_data.Avg_Residancy_Altitude-1, all_data.Avg_Residancy_Altitude)
 
 # Division according to Weighted_education_rank
 
@@ -193,7 +201,7 @@ for i in parties:
     cluster_A_percent = cluster_A_vals.shape[0] / total
     cluster_B_percent = 1-cluster_A_percent
     print(i + ": Cluster A = " + str(cluster_A_percent) + ", Cluster B = " + str(cluster_B_percent))
-    if cluster_B_percent > threshold:
+    if cluster_B_percent > similarity_threshold:
         cluster_B_parties_weighted.append(i)
     else:
         cluster_A_parties_weighted.append(i)
@@ -213,7 +221,7 @@ for i in parties:
     cluster_A_percent = cluster_A_vals.shape[0] / total
     cluster_B_percent = 1-cluster_A_percent
     print(i + ": Cluster A = " + str(cluster_A_percent) + ", Cluster B = " + str(1-cluster_A_percent))
-    if cluster_B_percent > threshold:
+    if cluster_B_percent > similarity_threshold:
         cluster_B_parties_residancy.append(i)
     else:
         cluster_A_parties_residancy.append(i)
