@@ -93,26 +93,9 @@ X_test = pd.read_csv(X_test_file)
 Y_test_file = 'Y_test.csv'
 Y_test = pd.read_csv(Y_test_file, header=None, names=['Vote'])
 
-# -------------------------------------------------------------------
-# ---------------- 2: Train generative model ------------------------
-# -------------------------------------------------------------------
-
-
-# QDA
-QDA_classifier = QuadraticDiscriminantAnalysis()
-QDA_classifier.fit(X_train, Y_train)
-
-# LDA
-LDA_classifier = LinearDiscriminantAnalysis()
-LDA_classifier.fit(X_train, Y_train)
-
-# Gaussian Naive Bayes
-GNB_classifier = GaussianNB(var_smoothing=1e-9)
-GNB_classifier.fit(X_train, Y_train)
-
 
 # -------------------------------------------------------------------
-# ---------------- 3: Train clustering model ------------------------
+# ---------------- 2: Train clustering model ------------------------
 # -------------------------------------------------------------------
 
 X_values = X_train.values
@@ -148,7 +131,7 @@ for i in range(1, cols_num_wanted + 1):
         plt.show()
 
 
-# ------------------------ 3A: Party-Cluster Belonging --------------
+# ------------------------ 2A: Party-Cluster Belonging --------------
 
 
 parties = ["Khakis", "Oranges", "Purples", "Turquoises", "Yellows", "Blues", "Whites",
@@ -229,7 +212,7 @@ for i in parties:
 print("**********")
 
 
-# ------------------------ 3B: Cluster-Voting percents --------------
+# ------------------------ 2B: Cluster-Voting percents --------------
 
 
 print(parties_voting_percentage)
@@ -264,8 +247,28 @@ print(cluster_B_parties_residancy)
 
 
 # -------------------------------------------------------------------
+# ---------------- 3: Train generative model ------------------------
+# -------------------------------------------------------------------
+
+
+# QDA
+QDA_classifier = QuadraticDiscriminantAnalysis()
+QDA_classifier.fit(X_train, Y_train)
+
+# LDA
+LDA_classifier = LinearDiscriminantAnalysis()
+LDA_classifier.fit(X_train, Y_train)
+
+# Gaussian Naive Bayes
+GNB_classifier = GaussianNB(var_smoothing=1e-9)
+GNB_classifier.fit(X_train, Y_train)
+
+
+# -------------------------------------------------------------------
 # ---------------- 4: Apply and check performance -------------------
 # -------------------------------------------------------------------
+
+X_test = X_test.set_index('Unnamed: 0')
 
 printResults(QDA_classifier, X_test, Y_test, X_train, Y_train, "QDA")
 printResults(LDA_classifier, X_test, Y_test, X_train, Y_train, "LDA")

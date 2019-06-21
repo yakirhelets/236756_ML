@@ -1,14 +1,14 @@
 ,Predicted Khakis,Predicted Oranges,Predicted Purples,Predicted Turquoises,Predicted Yellows,Predicted Blues,Predicted Whites,Predicted Greens,Predicted Violets,Predicted Browns,Predicted Reds,Predicted Greys,Predicted Pinks
-Actual Khakis,287,0,0,62,8,3,1,20,18,0,1,0,0
-Actual Oranges,28,25,0,0,9,0,0,0,4,0,0,1,0
-Actual Purples,474,0,0,2,20,1,0,0,11,0,0,8,0
-Actual Turquoises,85,0,0,3,1,0,1,0,11,0,0,0,1
-Actual Yellows,33,0,0,5,33,12,0,0,0,0,0,1,0
-Actual Blues,1,0,0,0,17,81,0,0,0,0,0,1,0
-Actual Whites,88,0,0,0,4,0,0,0,2,0,0,0,0
-Actual Greens,82,0,0,15,5,4,0,0,0,0,0,10,0
-Actual Violets,80,0,0,1,5,1,0,1,2,0,0,0,0
-Actual Browns,166,0,0,2,6,3,0,0,14,0,0,0,0
-Actual Reds,38,48,0,2,6,0,0,0,0,0,0,0,0
-Actual Greys,16,65,0,0,2,0,0,0,0,0,0,1,0
-Actual Pinks,55,0,0,1,6,0,0,0,0,0,0,0,0
+Actual Khakis,389,0,2,1,3,3,0,0,0,1,0,0,1
+Actual Oranges,0,61,0,0,0,0,0,0,0,0,2,3,1
+Actual Purples,4,0,504,0,0,0,2,0,0,4,0,0,2
+Actual Turquoises,31,0,0,70,1,0,0,0,0,0,0,0,0
+Actual Yellows,4,1,0,0,72,6,0,1,0,0,0,0,0
+Actual Blues,0,0,1,1,4,94,0,0,0,0,0,0,0
+Actual Whites,0,1,4,0,0,0,74,0,0,13,0,1,1
+Actual Greens,0,0,0,0,1,0,0,115,0,0,0,0,0
+Actual Violets,31,0,0,15,1,1,0,0,41,0,0,0,1
+Actual Browns,0,0,5,0,1,0,4,0,0,181,0,0,0
+Actual Reds,0,1,2,0,0,0,0,0,0,0,83,8,0
+Actual Greys,0,0,0,0,0,0,0,0,0,0,0,84,0
+Actual Pinks,0,0,0,0,0,0,1,0,0,9,0,0,52
