@@ -277,8 +277,6 @@ printResults(GNB_classifier, X_test, Y_test, X_train, Y_train, "GNB")
 LDA_probs = LDA_classifier.predict_proba(X_test)
 GNB_probs = GNB_classifier.predict_proba(X_test)
 
-
-
 # Get coalition according to LDA
 
 get_coalition_by_probs(LDA_probs)
