@@ -116,6 +116,7 @@ final_prediction.to_csv("Final_Predictions.csv")
 # Predict which party would win the majority of votes
 
 printHistogram(final_prediction, 'PredictVote')
+# TODO check why different runs produce different results
 
 # histogram of the distribution of votes on the original dataset
 
