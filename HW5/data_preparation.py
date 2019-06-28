@@ -110,6 +110,8 @@ def prepare_data():
     modeImputation(X_validation)
     modeImputation(X_test)
 
+    # imputation for new data set (hw5)
+
     for i in range(1, len(new_elections_data.columns)):
         i_th_column = new_elections_data.iloc[:, i]
         mod = i_th_column.mode().get(0)
