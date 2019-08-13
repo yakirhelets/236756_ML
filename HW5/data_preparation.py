@@ -56,7 +56,7 @@ def prepare_data():
     labels = elections_data.iloc[:, 0]  # labels
 
     X_train, X_test, Y_train, Y_test = \
-        train_test_split(data, labels, train_size=0.8, test_size=0.2, shuffle=True,
+        train_test_split(data, labels, train_size=0.7, test_size=0.3, shuffle=True,
                          random_state=None, stratify=None)
     X_train, X_validation, Y_train, Y_validation = \
         train_test_split(X_train, Y_train, train_size=0.8, test_size=0.2, shuffle=True,
@@ -162,7 +162,8 @@ def prepare_data():
     # Z-score:
 
     def zscoreScaling(dataset):
-        z_score_attributes = [0, 1, 2, 3, 4, 6, 7]
+        # z_score_attributes = []
+        z_score_attributes = [5]
 
         # actual zscore scaling
         for i in z_score_attributes:
@@ -174,7 +175,8 @@ def prepare_data():
     zscoreScaling(X_test)
 
 
-    z_score_attributes = [1, 2, 3, 4, 5, 7, 8]
+    # z_score_attributes = []
+    z_score_attributes = [6]
 
     # actual zscore scaling
     for i in z_score_attributes:
@@ -184,7 +186,14 @@ def prepare_data():
     def minmaxScaling(dataset):
         scaler = MinMaxScaler(feature_range=(-1, 1))
 
-        min_max_attributes = ["Yearly_ExpensesK"]
+        # min_max_attributes = ["Weighted_education_rank", "Number_of_valued_Kneset_members",
+        #                       "Avg_Residancy_Altitude", "Avg_environmental_importance",
+        #                       "Avg_government_satisfaction", "Avg_education_importance",
+        #                       "Avg_monthly_expense_on_pets_or_plants", "Yearly_ExpensesK"]
+        min_max_attributes = ["Weighted_education_rank", "Number_of_valued_Kneset_members",
+                              "Avg_Residancy_Altitude", "Avg_environmental_importance",
+                              "Avg_government_satisfaction", "Avg_education_importance",
+                              "Avg_monthly_expense_on_pets_or_plants"]
 
         # actual min_max scaling
         dataset[min_max_attributes] = scaler.fit_transform(dataset[min_max_attributes])

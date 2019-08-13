@@ -84,7 +84,7 @@ X_new_data = pd.read_csv(X_new_data_file)
 
 np.random.seed(seed=0)
 
-RF_classifier = RandomForestClassifier(n_estimators=13, max_depth=None, random_state=0)
+RF_classifier = RandomForestClassifier(n_estimators=13, max_depth=30, random_state=0)
 RF_classifier = RF_classifier.fit(X_train, Y_train)
 RF_valid_pred = RF_classifier.predict(X_validation)
 get_scores(Y_validation, RF_valid_pred, "RF(valid)")
@@ -152,7 +152,6 @@ X_and_Y_new_data = pd.concat([X_new_data, Y_new_data], axis=1)
 printHistogram(combined_Y, 'Vote')
 
 # histogram of the distribution of votes on the new dataset
-
 printHistogram(final_prediction, 'PredictVote')
 
 # (2) Predict the division of votes between the various parties >>>
@@ -226,7 +225,7 @@ for party in parties:
 
 print("**********")
 
-similarity_threshold = 0.995
+similarity_threshold = 0.9995
 
 parties_voting_percentage = {}
 
